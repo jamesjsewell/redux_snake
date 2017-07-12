@@ -380,6 +380,7 @@ class EditProfile extends Component {
                                 : <Segment.Group compact size="mini">
                                       <Segment>
                                           <Button
+                                                type="button"
                                               onClick={this.handleUpload.bind(
                                                   this
                                               )}
