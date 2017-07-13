@@ -362,16 +362,18 @@ class EditProfile extends Component {
                                                   basic
                                               />
 
-                                              {imgUrl === profile.avatarUrl? <Button
-                                                  onClick={() => {
-                                                      this.setState({
-                                                          removePicModalOpen: true
-                                                      })
-                                                  }}
-                                                  type="button"
-                                                  icon="remove"
-                                                  basic
-                                              /> : null}
+                                              {imgUrl === profile.avatarUrl
+                                                  ? <Button
+                                                        onClick={() => {
+                                                            this.setState({
+                                                                removePicModalOpen: true
+                                                            })
+                                                        }}
+                                                        type="button"
+                                                        icon="remove"
+                                                        basic
+                                                    />
+                                                  : null}
                                           </Button.Group>
 
                                       </Segment>
@@ -380,7 +382,7 @@ class EditProfile extends Component {
                                 : <Segment.Group compact size="mini">
                                       <Segment>
                                           <Button
-                                                type="button"
+                                              type="button"
                                               onClick={this.handleUpload.bind(
                                                   this
                                               )}
@@ -424,7 +426,6 @@ class EditProfile extends Component {
                                 </Modal.Content>
                             </Modal>
 
-                           
                             <textarea
                                 as={Segment}
                                 basic
@@ -440,7 +441,7 @@ class EditProfile extends Component {
                                         : "tell us about yourself"
                                 }
                             />
-                        
+
                         </Segment>
 
                     </Segment.Group>
