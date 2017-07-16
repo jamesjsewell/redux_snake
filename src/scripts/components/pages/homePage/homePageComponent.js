@@ -24,7 +24,7 @@ class HomePage extends Component {
 
     render() {
         return (
-            <Container>
+            <Container textAlign="center">
                 <ReduxSnake />
 
             </Container>

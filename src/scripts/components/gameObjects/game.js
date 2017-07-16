@@ -6,6 +6,15 @@ import Backbone from "backbone"
 import $ from "jquery"
 import moment from "moment"
 import "moment/locale/pt-br"
+import {
+    Button,
+    Grid,
+    Segment,
+    Input,
+    Container,
+    Header,
+    Divider
+} from "semantic-ui-react"
 
 //getting the date
 var fullDate = new Date()
@@ -52,10 +61,12 @@ class ReduxSnake extends Component {
             topScore: localStorage["topscore"] || 0,
             inGame: false,
             snakeDirection: "right",
-            snakeArray: []
+            snakeArray: [],
+            snakeFood: {},
+            snakeColor: "#66ff66",
+            foodColor: "#ff0000"
         }
 
-        this.snakeFood = []
         this.particles = []
         this.popups = []
     }
@@ -111,16 +122,6 @@ class ReduxSnake extends Component {
 
         this.startGame()
 
-        // requestAnimationFrame(() => {
-        //     this.update()
-        // })
-
-        // setTimeout(()=> {
-        //     //throttle requestAnimationFrame to 20fps
-
-        //     requestAnimationFrame(()=>{this.update()})
-        // }, 1000 / 20)
-
         window.requestAnimationFrame =
             window.requestAnimationFrame ||
             window.mozRequestAnimationFrame ||
@@ -156,10 +157,10 @@ class ReduxSnake extends Component {
         const context = this.state.context
         const keys = this.state.keys
 
-        if (this.state.keys.up  && this.state.snakeDirection != "down") {
+        if (this.state.keys.up && this.state.snakeDirection != "down") {
             this.state.snakeDirection = "up"
         }
-        if (this.state.keys.down  && this.state.snakeDirection != "up") {
+        if (this.state.keys.down && this.state.snakeDirection != "up") {
             this.state.snakeDirection = "down"
         }
         if (this.state.keys.left && this.state.snakeDirection != "right") {
@@ -226,7 +227,10 @@ class ReduxSnake extends Component {
                 //The logic is simple
                 //If the new head position matches with that of the food,
                 //Create a new head instead of moving the tail
-                if (headX == this.snakeFood.x && headY == this.snakeFood.y) {
+                if (
+                    headX == this.state.snakeFood.x &&
+                    headY == this.state.snakeFood.y
+                ) {
                     var tail = { x: headX, y: headY }
                     //score++
 
@@ -249,12 +253,16 @@ class ReduxSnake extends Component {
                         : undefined
 
                     if (snakeTile) {
-                        this.placeTile(snakeTile.x, snakeTile.y, "green")
+                        this.placeTile(snakeTile.x, snakeTile.y, this.state.snakeColor)
                     }
                 }
 
                 //Lets paint the food
-                this.placeTile(this.snakeFood.x, this.snakeFood.y, "red")
+                this.placeTile(
+                    this.state.snakeFood.x,
+                    this.state.snakeFood.y,
+                    this.state.foodColor
+                )
                 //Lets paint the score
                 // var score_text = "Score: " + score
                 // var level_text = "Level: " + level
@@ -296,7 +304,7 @@ class ReduxSnake extends Component {
         }
 
         // generate food
-        if (!this.snakeFood) {
+        if (!this.state.snakeFood.x) {
             this.generateFood()
         }
     }
@@ -319,16 +327,16 @@ class ReduxSnake extends Component {
     // GAME ENTITY LOGIC //
 
     generateFood() {
-        this.snakeFood = {
+        this.state.snakeFood = {
             x: Math.round(
                 Math.random() *
-                    (this.state.gameWrapper.width - tileWidth) /
-                    tileWidth
+                    (this.state.gameWrapper.width - this.state.tileWidth) /
+                    this.state.tileWidth
             ),
             y: Math.round(
                 Math.random() *
-                    (this.state.gameWrapper.width - tileWidth) /
-                    tileWidth
+                    (this.state.gameWrapper.width - this.state.tileWidth) /
+                    this.state.tileWidth
             )
         }
     }
@@ -409,14 +417,17 @@ class ReduxSnake extends Component {
             <div ref="child">
 
                 {endgame}
-                <div className="score current-score">
-                    Score: {this.state.currentScore}
-                </div>
-                <div className="score top-score">
-                    Top Score: {this.state.topScore}
-                </div>
+                <Header className="score current-score">
+                    length: {this.state.currentScore}
+                </Header>
+                <Header sub className="score top-score">
+                    high score: {this.state.topScore}
+                </Header>
+
+                <Divider />
 
                 <canvas
+                    style={{ border: `4px solid grey` }}
                     ref="canvas"
                     width={gameAreaSize}
                     height={gameAreaSize}
