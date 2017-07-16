@@ -253,16 +253,25 @@ class ReduxSnake extends Component {
                         : undefined
 
                     if (snakeTile) {
-                        this.placeTile(snakeTile.x, snakeTile.y, this.state.snakeColor)
+                        this.placeTile(
+                            snakeTile.x,
+                            snakeTile.y,
+                            this.state.snakeColor
+                        )
                     }
                 }
 
                 //Lets paint the food
-                this.placeTile(
-                    this.state.snakeFood.x,
-                    this.state.snakeFood.y,
-                    this.state.foodColor
-                )
+                if (this.state.snakeFood.x) {
+                    this.placeTile(
+                        this.state.snakeFood.x,
+                        this.state.snakeFood.y,
+                        this.state.foodColor
+                    )
+                } else {
+                    this.generateFood()
+                }
+
                 //Lets paint the score
                 // var score_text = "Score: " + score
                 // var level_text = "Level: " + level
@@ -278,7 +287,7 @@ class ReduxSnake extends Component {
                 requestAnimationFrame(() => {
                     this.update()
                 })
-            }, 1000 / 20)
+            }, 1000 / 10)
         }
     }
 
