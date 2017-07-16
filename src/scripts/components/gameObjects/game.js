@@ -156,16 +156,16 @@ class ReduxSnake extends Component {
         const context = this.state.context
         const keys = this.state.keys
 
-        if (this.state.keys.up) {
+        if (this.state.keys.up  && this.state.snakeDirection != "down") {
             this.state.snakeDirection = "up"
         }
-        if (this.state.keys.down) {
+        if (this.state.keys.down  && this.state.snakeDirection != "up") {
             this.state.snakeDirection = "down"
         }
-        if (this.state.keys.left) {
+        if (this.state.keys.left && this.state.snakeDirection != "right") {
             this.state.snakeDirection = "left"
         }
-        if (this.state.keys.right) {
+        if (this.state.keys.right && this.state.snakeDirection != "left") {
             this.state.snakeDirection = "right"
         }
 
