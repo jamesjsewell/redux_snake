@@ -1,7 +1,5 @@
 import React, { Component } from "react"
-import Snake from "./player/snakeComponent.js"
-import Frog from "./frog/frogComponent.js"
-import { randomNumBetweenExcluding } from "./gameHelpers"
+import { connect } from "react-redux"
 import Backbone from "backbone"
 import $ from "jquery"
 import moment from "moment"
@@ -15,6 +13,19 @@ import {
     Header,
     Divider
 } from "semantic-ui-react"
+
+import {
+    startGame,
+    pauseGame,
+    resumeGame,
+    endGame,
+    gameOver,
+    newGame,
+    addToScore,
+    setHighScore,
+    getHighScore,
+    newHighScore
+} from "../../actions/gameActions.js"
 
 //getting the date
 var fullDate = new Date()
@@ -173,7 +184,7 @@ class ReduxSnake extends Component {
         if (this.state.keys.right && this.state.snakeDirection != "left") {
             this.state.snakeDirection = "right"
         }
-        if(this.state.keys.pause){
+        if (this.state.keys.pause) {
             this.state.paused = true
         }
 
@@ -227,7 +238,6 @@ class ReduxSnake extends Component {
                     //restart game
                     //init()
                     //Lets organize the code a bit now.
-                    
                 }
 
                 //Lets write the code to make the snake eat the food
@@ -325,9 +335,13 @@ class ReduxSnake extends Component {
         }
     }
 
-    pauseGame(){
+    newGame() {}
 
-    }
+    pauseGame() {}
+
+    endGame() {}
+
+    resumeGame() {}
 
     gameOver() {
         this.setState({
@@ -458,4 +472,29 @@ class ReduxSnake extends Component {
     }
 }
 
-export default ReduxSnake
+function mapStateToProps(state) {
+    return {
+        newGame: state.game.new,
+        gamePaused: state.game.paused,
+        gameReady: state.game.ready,
+        gameInAction: state.game.inAction,
+        gameOver: state.game.over,
+        gameStopped: state.game.stopped,
+        highScore: state.game.highScore,
+        newHighScore: state.game.newHighScore,
+        score: state.game.score
+    }
+}
+
+export default connect(mapStateToProps, {
+    startGame,
+    pauseGame,
+    resumeGame,
+    endGame,
+    gameOver,
+    newGame,
+    addToScore,
+    setHighScore,
+    getHighScore,
+    newHighScore
+})(ReduxSnake)
