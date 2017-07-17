@@ -23,7 +23,6 @@ import {
     newGame,
     addToScore,
     setHighScore,
-    getHighScore,
     newHighScore
 } from "../../actions/gameActions.js"
 
@@ -33,6 +32,8 @@ var theDate = String(fullDate).split(" ")
 var theDay = theDate[2]
 var theMonth = theDate[1]
 var theYear = theDate[3]
+
+const frameRate = 10
 
 const KEY = {
     LEFT: 37,
@@ -72,12 +73,13 @@ class ReduxSnake extends Component {
             currentScore: 0,
             topScore: localStorage["topscore"] || 0,
             inGame: false,
-            snakeDirection: "right",
-            snakeArray: [],
+            snakeDirection: undefined,
+            snakeArray: undefined,
             snakeFood: {},
             snakeColor: "#66ff66",
             snakeLength: 1,
             foodColor: "#ff0000",
+            wallArray: [],
             paused: false
         }
 
@@ -116,6 +118,8 @@ class ReduxSnake extends Component {
         })
     }
 
+    componentWillReceiveProps(nextProps) {}
+
     componentDidMount() {
         window.addEventListener("keyup", this.handleKeys.bind(this, false))
         window.addEventListener("keydown", this.handleKeys.bind(this, true))
@@ -134,8 +138,6 @@ class ReduxSnake extends Component {
                 0.8 /
                 this.state.tileRatio
         })
-
-        this.startGame()
 
         window.requestAnimationFrame =
             window.requestAnimationFrame ||
@@ -185,132 +187,161 @@ class ReduxSnake extends Component {
             this.state.snakeDirection = "right"
         }
         if (this.state.keys.pause) {
-            this.state.paused = true
+            this.pauseGame()
         }
 
-        if (context != null) {
-            context.save()
-            context.scale(1, 1)
+        context.save()
+        context.scale(1, 1)
 
-            context.globalAlpha = 0.4
-            context.fillRect(
-                0,
-                0,
-                this.state.gameWrapper.width,
-                this.state.gameWrapper.width
-            )
-            context.clearRect(
-                0,
-                0,
-                this.state.gameWrapper.width,
-                this.state.gameWrapper.width
-            )
-            context.globalAlpha = 1
+        context.globalAlpha = 0.4
+        context.fillRect(
+            0,
+            0,
+            this.state.gameWrapper.width,
+            this.state.gameWrapper.width
+        )
+        context.clearRect(
+            0,
+            0,
+            this.state.gameWrapper.width,
+            this.state.gameWrapper.width
+        )
+        context.globalAlpha = 1
 
-            //The movement code for the snake to come here.
-            //The logic is simple
-            //Pop out the tail cell and place it infront of the head cell
+        //place wall tiles
+        for(var brick = 0; brick < this.state.wallArray.length; brick++){
+           
+            this.placeTile(
+                    this.state.wallArray[brick].x,
+                    this.state.wallArray[brick].y,
+                    "grey"
+                )
+        }
 
-            if (this.state.snakeArray[0]) {
-                var headX = this.state.snakeArray[0].x
-                var headY = this.state.snakeArray[0].y
-                //These were the position of the head cell.
-                //We will increment it to get the new head position
-                //Lets add proper direction based movement now
-                if (this.state.snakeDirection === "right") headX++
-                else if (this.state.snakeDirection === "left") headX--
-                else if (this.state.snakeDirection === "up") headY--
-                else if (this.state.snakeDirection === "down") headY++
+        //snake movement
+        if (this.state.snakeArray && this.props.gameInAction) {
+            var headX = this.state.snakeArray[0].x
+            var headY = this.state.snakeArray[0].y
 
-                //Lets add the game over clauses now
-                //This will restart the game if the snake hits the wall
-                //Lets add the code for body collision
-                //Now if the head of the snake bumps into its body, the game will restart
-                if (
-                    headX == -1 ||
-                    headX ==
-                        this.state.gameWrapper.width / this.state.tileWidth ||
-                    headY == -1 ||
-                    headY ==
-                        this.state.gameWrapper.width / this.state.tileWidth ||
-                    this.checkCollision(headX, headY, this.state.snakeArray)
-                ) {
-                    //restart game
-                    //init()
-                    //Lets organize the code a bit now.
+            if (this.state.snakeDirection === "right") headX++
+            else if (this.state.snakeDirection === "left") headX--
+            else if (this.state.snakeDirection === "up") headY--
+            else if (this.state.snakeDirection === "down") headY++
+
+            //checks if snake hits a wall or itself
+            if (
+                headX == 0 ||
+                headX == (this.state.gameWrapper.width / this.state.tileWidth)-1 ||
+                headY == 0 ||
+                headY == (this.state.gameWrapper.width / this.state.tileWidth)-1 ||
+                this.checkCollision(headX, headY, this.state.snakeArray)
+            ) {
+                if (this.state.snakeDirection) {
+                    this.props.gameOver()
                 }
+            }
 
-                //Lets write the code to make the snake eat the food
-                //The logic is simple
-                //If the new head position matches with that of the food,
-                //Create a new head instead of moving the tail
+            if (!this.props.lostGame) {
+                //checks if snake is eating food and animates snake
                 if (
                     headX == this.state.snakeFood.x &&
                     headY == this.state.snakeFood.y
                 ) {
                     var tail = { x: headX, y: headY }
-                    //score++
+                    this.addToScore()
 
-                    //Create new food
                     this.generateFood()
                 } else {
-                    if (this.state.snakeArray) {
-                        var tail = this.state.snakeArray.pop() //pops out the last cell
+                    if (this.state.snakeDirection) {
+                        var tail = this.state.snakeArray.pop()
                         tail.x = headX
                         tail.y = headY
                     }
                 }
-                //The snake can now eat the food.
 
-                this.state.snakeArray.unshift(tail) //puts back the tail as the first cell
-
-                for (var i = 0; i < this.state.snakeArray.length; i++) {
-                    var snakeTile = this.state.snakeArray
-                        ? this.state.snakeArray[i]
-                        : undefined
-
-                    if (snakeTile) {
-                        this.placeTile(
-                            snakeTile.x,
-                            snakeTile.y,
-                            this.state.snakeColor
-                        )
-                    }
+                if (this.state.snakeDirection) {
+                    this.state.snakeArray.unshift(tail)
                 }
-
-                //Lets paint the food
-                if (this.state.snakeFood.x) {
-                    this.placeTile(
-                        this.state.snakeFood.x,
-                        this.state.snakeFood.y,
-                        this.state.foodColor
-                    )
-                } else {
-                    this.generateFood()
-                }
-
-                //Lets paint the score
-                // var score_text = "Score: " + score
-                // var level_text = "Level: " + level
-                // ctx.fillText(score_text, 5, h - 5)
-                // ctx.fillText(level_text, 60, h - 5)
             }
 
-            context.restore()
+            //draws snake
+            for (var i = 0; i < this.state.snakeArray.length; i++) {
+                var snakeTile = this.state.snakeArray
+                    ? this.state.snakeArray[i]
+                    : undefined
 
-            setTimeout(() => {
-                //throttle requestAnimationFrame to 20fps
+                if (snakeTile) {
+                    this.placeTile(
+                        snakeTile.x,
+                        snakeTile.y,
+                        this.state.snakeColor
+                    )
+                }
+            }
 
-                requestAnimationFrame(() => {
-                    this.update()
-                })
-            }, 1000 / 10)
+            //generates food
+            if (this.state.snakeFood.x) {
+                this.placeTile(
+                    this.state.snakeFood.x,
+                    this.state.snakeFood.y,
+                    this.state.foodColor
+                )
+            } else {
+                this.generateFood()
+            }
         }
+
+        context.restore()
+
+        setTimeout(() => {
+            requestAnimationFrame(() => {
+                this.update()
+            })
+        }, 1000 / frameRate)
     }
 
     // CHANGE GAME STATE //
 
-    addScore(points) {
+    startGame() {
+        this.props.startGame()
+
+        this.setHighScore()
+
+        this.state.snakeDirection = undefined
+
+        // generate snake
+        this.createSnake()
+
+        // generate food
+        this.generateFood()
+
+        this.createWalls()
+    }
+
+    newGame() {
+        this.props.setHighScore()
+        this.props.newGame()
+    }
+
+    pauseGame() {
+        this.props.pauseGame()
+    }
+
+    endGame() {
+        this.newHighScore()
+        this.props.endgame()
+    }
+
+    resumeGame() {
+        this.props.resumeGame()
+    }
+
+    gameOver() {
+        this.newHighScore()
+        this.props.gameOver()
+    }
+
+    addToScore(points) {
         if (this.state.inGame) {
             this.setState({
                 currentScore: this.state.currentScore + points
@@ -318,43 +349,15 @@ class ReduxSnake extends Component {
         }
     }
 
-    startGame() {
-        this.setState({
-            inGame: true,
-            currentScore: 0
-        })
-
-        // generate snake
-        if (!this.state.snakeArray[0]) {
-            this.createSnake()
-        }
-
-        // generate food
-        if (!this.state.snakeFood.x) {
-            this.generateFood()
-        }
+    setHighScore() {
+        var highScore = ""
+        this.props.setHighScore(highScore)
     }
 
-    newGame() {}
-
-    pauseGame() {}
-
-    endGame() {}
-
-    resumeGame() {}
-
-    gameOver() {
-        this.setState({
-            inGame: false,
-            dataLoaded: false
-        })
-
-        // Replace top score
-        if (this.state.currentScore > this.state.topScore) {
-            this.setState({
-                topScore: this.state.currentScore
-            })
-            localStorage["topscore"] = this.state.currentScore
+    newHighScore() {
+        if (this.props.score > this.props.highScore) {
+            localStorage["snakeHighScore"] = this.props.score
+            this.props.newHighScore(this.props.score)
         }
     }
 
@@ -364,30 +367,55 @@ class ReduxSnake extends Component {
         this.state.snakeFood = {
             x: Math.round(
                 Math.random() *
-                    (this.state.gameWrapper.width - this.state.tileWidth) /
+                    (this.state.gameWrapper.width - (this.state.tileWidth *2)) /
                     this.state.tileWidth
             ),
             y: Math.round(
                 Math.random() *
-                    (this.state.gameWrapper.width - this.state.tileWidth) /
+                    (this.state.gameWrapper.width - (this.state.tileWidth*2)) /
                     this.state.tileWidth
             )
         }
     }
 
     createSnake() {
-        var length = 4
+        var length = this.state.snakeLength
         var snakeArray = []
 
         for (var i = length - 1; i >= 0; i--) {
             //This will create a horizontal snake starting from the top left
-            snakeArray.push({ x: i, y: 0 })
+            snakeArray.push({ x: i + 1, y: 1 })
         }
 
         this.state.snakeArray = snakeArray
     }
 
-    //  CREATE AND UPDATE //
+    createWalls() {
+        var wallArray = []
+
+        var wallLength = (this.state.gameWrapper.width / this.state.tileWidth) - 1
+        console.log(wallLength)
+
+        for (var brick = 0; brick < wallLength; brick++) {
+            wallArray.push({ x: brick, y: 0 })
+        }
+
+        for (var brick = 0; brick < wallLength; brick++) {
+            wallArray.push({ x: wallLength, y: brick })
+        }
+
+        for (var brick = wallLength; brick > 0; brick--) {
+            wallArray.push({ x: brick, y: wallLength })
+        }
+
+        for (var brick = wallLength; brick > 0; brick--) {
+            wallArray.push({ x: 0, y: brick })
+        }
+
+        this.state.wallArray = wallArray
+        console.log(this.state.wallArray)
+
+    }
 
     placeTile(x, y, color) {
         const tw = this.state.tileWidth
@@ -400,11 +428,8 @@ class ReduxSnake extends Component {
         this.state.context.restore()
     }
 
-    // COLLISIONS LOGIC //
-
     checkCollision(x, y, array) {
-        //This function will check if the provided x/y coordinates exist
-        //in an array of cells or not
+     
         for (var i = 0; i < array.length; i++) {
             if (array[i].x == x && array[i].y == y) {
                 return true
@@ -414,50 +439,59 @@ class ReduxSnake extends Component {
     }
 
     render() {
-        let endgame
-        let message
+        //let endgame
+        //let message
+        //   if (this.state.currentScore <= 0) {
+        //     message = "0 points... So sad."
+        // } else if (this.state.currentScore >= this.state.topScore) {
+        //     message =
+        //         "Top score with " + this.state.currentScore + " points. Woo!"
+        // } else {
+        //     message = this.state.currentScore + " Points though :)"
+        // }
 
-        if (this.state.currentScore <= 0) {
-            message = "0 points... So sad."
-        } else if (this.state.currentScore >= this.state.topScore) {
-            message =
-                "Top score with " + this.state.currentScore + " points. Woo!"
-        } else {
-            message = this.state.currentScore + " Points though :)"
-        }
+        // if (!this.state.inGame) {
+        //     endgame = (
+        //         <div className="endgame">
+        //             <p>Game over!</p>
+        //             <p>{message}</p>
+        //             <button onClick={this.startGame.bind(this)}>
+        //                 try again?
+        //             </button>
+        //         </div>
+        //     )
+        // }
+        // if (!this.state.dataLoaded && this.state.inGame) {
+        //     var loading = (
+        //         <div className="endgame">
+        //             <p>Loading</p>
+        //         </div>
+        //     )
+        // }
+        //{endgame}
 
-        if (!this.state.inGame) {
-            endgame = (
-                <div className="endgame">
-                    <p>Game over!</p>
-                    <p>{message}</p>
-                    <button onClick={this.startGame.bind(this)}>
-                        try again?
-                    </button>
-                </div>
-            )
-        }
-        if (!this.state.dataLoaded && this.state.inGame) {
-            var loading = (
-                <div className="endgame">
-                    <p>Loading</p>
-                </div>
-            )
-        }
         const gameAreaSize = this.state.gameWrapper.width
             ? this.state.gameWrapper.width
             : 400
         return (
             <div ref="child">
 
-                {endgame}
                 <Header className="score current-score">
                     length: {this.state.snakeLength}
                 </Header>
                 <Header sub className="score top-score">
                     high score: {this.state.topScore}
                 </Header>
-
+                {this.props.gameInAction
+                    ? null
+                    : <Button
+                          onClick={() => {
+                              this.startGame()
+                          }}
+                          type="button"
+                      >
+                          start
+                      </Button>}
                 <Divider />
 
                 <canvas
@@ -478,7 +512,7 @@ function mapStateToProps(state) {
         gamePaused: state.game.paused,
         gameReady: state.game.ready,
         gameInAction: state.game.inAction,
-        gameOver: state.game.over,
+        lostGame: state.game.over,
         gameStopped: state.game.stopped,
         highScore: state.game.highScore,
         newHighScore: state.game.newHighScore,
@@ -495,6 +529,5 @@ export default connect(mapStateToProps, {
     newGame,
     addToScore,
     setHighScore,
-    getHighScore,
     newHighScore
 })(ReduxSnake)

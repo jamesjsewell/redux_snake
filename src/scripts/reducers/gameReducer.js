@@ -11,6 +11,8 @@ import {
 	NEW_HIGH_SCORE
 } from "../actions/types.js"
 
+import _ from "underscore"
+
 const INITIAL_STATE = {
 	new: true,
 	paused: false,
@@ -26,7 +28,7 @@ const INITIAL_STATE = {
 export default function(state = INITIAL_STATE, action) {
 	switch (action.type) {
 		case START_GAME: {
-			return _.extend({}, state, { new: true, newHighScore: false })
+			return _.extend({}, state, { new: true, newHighScore: false, inAction: true })
 		}
 
 		case PAUSE_GAME: {
@@ -48,10 +50,10 @@ export default function(state = INITIAL_STATE, action) {
 		case GAME_OVER: {
 			return _.extend({}, state, {
 				paused: false,
-				inAction: false,
+				inAction: true,
 				over: true,
 				stopped: false,
-				ready: true,
+				ready: false,
 				new: false
 			})
 		}
