@@ -32,6 +32,7 @@ const KEY = {
     D: 68,
     W: 87,
     S: 83,
+    P: 80,
     SPACE: 32
 }
 
@@ -64,7 +65,9 @@ class ReduxSnake extends Component {
             snakeArray: [],
             snakeFood: {},
             snakeColor: "#66ff66",
-            foodColor: "#ff0000"
+            snakeLength: 1,
+            foodColor: "#ff0000",
+            paused: false
         }
 
         this.particles = []
@@ -96,6 +99,7 @@ class ReduxSnake extends Component {
         if (e.keyCode === KEY.UP || e.keyCode === KEY.W) keys.up = value
         if (e.keyCode === KEY.DOWN || e.keyCode === KEY.S) keys.down = value
         if (e.keyCode === KEY.SPACE) keys.space = value
+        if (e.keyCode === KEY.P || e.keyCode === KEY.SPACE) keys.pause = value
         this.setState({
             keys: keys
         })
@@ -169,6 +173,9 @@ class ReduxSnake extends Component {
         if (this.state.keys.right && this.state.snakeDirection != "left") {
             this.state.snakeDirection = "right"
         }
+        if(this.state.keys.pause){
+            this.state.paused = true
+        }
 
         if (context != null) {
             context.save()
@@ -220,7 +227,7 @@ class ReduxSnake extends Component {
                     //restart game
                     //init()
                     //Lets organize the code a bit now.
-                    return
+                    
                 }
 
                 //Lets write the code to make the snake eat the food
@@ -316,6 +323,10 @@ class ReduxSnake extends Component {
         if (!this.state.snakeFood.x) {
             this.generateFood()
         }
+    }
+
+    pauseGame(){
+
     }
 
     gameOver() {
@@ -427,7 +438,7 @@ class ReduxSnake extends Component {
 
                 {endgame}
                 <Header className="score current-score">
-                    length: {this.state.currentScore}
+                    length: {this.state.snakeLength}
                 </Header>
                 <Header sub className="score top-score">
                     high score: {this.state.topScore}

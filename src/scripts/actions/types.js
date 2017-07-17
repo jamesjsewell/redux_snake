@@ -41,3 +41,25 @@ export const SEND_CONTACT_FORM = "send_contact_form",
 // Data Actions
 //= =====================
 export const LOADING_DATA = "loading_data"
+
+//= =====================
+// Game Actions
+//= =====================
+export const START_GAME = "start_game",
+    PAUSE_GAME = "pause_game",
+    RESUME_GAME = "resume_game",
+    END_GAME = "end_game",
+    GAME_OVER = "game_over",
+    NEW_GAME = "new_game",
+    ADD_TO_SCORE = "add_to_score",
+    SET_HIGH_SCORE = "set_high_score", 
+    GET_HIGH_SCORE = "get_high_score", 
+    NEW_HIGH_SCORE = "new_high_score"
+
+
+
+
+
+
+
+
