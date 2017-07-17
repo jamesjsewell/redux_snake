@@ -209,13 +209,12 @@ class ReduxSnake extends Component {
         context.globalAlpha = 1
 
         //place wall tiles
-        for(var brick = 0; brick < this.state.wallArray.length; brick++){
-           
+        for (var brick = 0; brick < this.state.wallArray.length; brick++) {
             this.placeTile(
-                    this.state.wallArray[brick].x,
-                    this.state.wallArray[brick].y,
-                    "grey"
-                )
+                this.state.wallArray[brick].x,
+                this.state.wallArray[brick].y,
+                "grey"
+            )
         }
 
         //snake movement
@@ -228,20 +227,13 @@ class ReduxSnake extends Component {
             else if (this.state.snakeDirection === "up") headY--
             else if (this.state.snakeDirection === "down") headY++
 
-            //checks if snake hits a wall or itself
-            if (
-                headX == 0 ||
-                headX == (this.state.gameWrapper.width / this.state.tileWidth)-1 ||
-                headY == 0 ||
-                headY == (this.state.gameWrapper.width / this.state.tileWidth)-1 ||
-                this.checkCollision(headX, headY, this.state.snakeArray)
-            ) {
-                if (this.state.snakeDirection) {
-                    this.props.gameOver()
-                }
-            }
-
             if (!this.props.lostGame) {
+                if (this.checkCollision(headX, headY, this.state.snakeArray)) {
+                    if (this.state.snakeDirection) {
+                        this.props.gameOver()
+                    }
+                }
+
                 //checks if snake is eating food and animates snake
                 if (
                     headX == this.state.snakeFood.x &&
@@ -288,6 +280,19 @@ class ReduxSnake extends Component {
                 )
             } else {
                 this.generateFood()
+            }
+
+            //checks if snake hits a wall or itself
+            if (
+                headX == 0 ||
+                headX ==
+                    this.state.gameWrapper.width / this.state.tileWidth - 1 ||
+                headY == 0 ||
+                headY == this.state.gameWrapper.width / this.state.tileWidth - 1
+            ) {
+                if (this.state.snakeDirection) {
+                    this.props.gameOver()
+                }
             }
         }
 
@@ -367,12 +372,12 @@ class ReduxSnake extends Component {
         this.state.snakeFood = {
             x: Math.round(
                 Math.random() *
-                    (this.state.gameWrapper.width - (this.state.tileWidth *2)) /
+                    (this.state.gameWrapper.width - this.state.tileWidth * 2) /
                     this.state.tileWidth
             ),
             y: Math.round(
                 Math.random() *
-                    (this.state.gameWrapper.width - (this.state.tileWidth*2)) /
+                    (this.state.gameWrapper.width - this.state.tileWidth * 2) /
                     this.state.tileWidth
             )
         }
@@ -393,7 +398,7 @@ class ReduxSnake extends Component {
     createWalls() {
         var wallArray = []
 
-        var wallLength = (this.state.gameWrapper.width / this.state.tileWidth) - 1
+        var wallLength = this.state.gameWrapper.width / this.state.tileWidth - 1
         console.log(wallLength)
 
         for (var brick = 0; brick < wallLength; brick++) {
@@ -414,7 +419,6 @@ class ReduxSnake extends Component {
 
         this.state.wallArray = wallArray
         console.log(this.state.wallArray)
-
     }
 
     placeTile(x, y, color) {
@@ -429,7 +433,6 @@ class ReduxSnake extends Component {
     }
 
     checkCollision(x, y, array) {
-     
         for (var i = 0; i < array.length; i++) {
             if (array[i].x == x && array[i].y == y) {
                 return true
