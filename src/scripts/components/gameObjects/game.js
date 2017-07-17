@@ -369,18 +369,14 @@ class ReduxSnake extends Component {
     // GAME ENTITY LOGIC //
 
     generateFood() {
+        var wall = this.state.gameWrapper.width / this.state.tileWidth - 2
+        var max = Math.floor(wall)
+        var min = Math.ceil(1)
         this.state.snakeFood = {
-            x: Math.round(
-                Math.random() *
-                    (this.state.gameWrapper.width - this.state.tileWidth * 2) /
-                    this.state.tileWidth
-            ),
-            y: Math.round(
-                Math.random() *
-                    (this.state.gameWrapper.width - this.state.tileWidth * 2) /
-                    this.state.tileWidth
-            )
+            x: Math.floor(Math.random() * (max - min) + min),  
+            y: Math.floor(Math.random() * (max - min) + min)
         }
+       
     }
 
     createSnake() {
@@ -418,7 +414,6 @@ class ReduxSnake extends Component {
         }
 
         this.state.wallArray = wallArray
-        console.log(this.state.wallArray)
     }
 
     placeTile(x, y, color) {
@@ -498,7 +493,6 @@ class ReduxSnake extends Component {
                 <Divider />
 
                 <canvas
-                    style={{ border: `4px solid grey` }}
                     ref="canvas"
                     width={gameAreaSize}
                     height={gameAreaSize}
