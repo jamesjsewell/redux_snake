@@ -17,6 +17,7 @@ const INITIAL_STATE = {
 	paused: false,
 	inAction: false,
 	over: false,
+	gameOverMessage: undefined,
 	stopped: true,
 	highScore: undefined,
 	newHighScore: undefined,
@@ -44,6 +45,7 @@ export default function(state = INITIAL_STATE, action) {
 		case GAME_OVER: {
 
 			return _.extend({}, state, {
+				gameOverMessage: action.payload,
 				paused: false,
 				inAction: true,
 				over: true

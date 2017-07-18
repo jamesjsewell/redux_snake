@@ -23,7 +23,7 @@ import {
     endGame,
     gameOver,
     newGame,
-    addToScore,
+    updateScore,
     setHighScore,
     newHighScore
 } from "../../actions/gameActions.js"
@@ -89,22 +89,29 @@ class ReduxSnake extends Component {
         this.popups = []
     }
 
-    handleResize(value, e) {
-        this.setState({
-            screen: {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                ratio: window.devicePixelRatio || 1
-            },
-            gameWrapper: {
-                width: this.refs.child
-                    ? this.refs.child.parentNode.offsetWidth * 0.8
-                    : undefined
-            },
-            tileWidth: this.refs.child.parentNode.offsetWidth *
-                0.8 /
-                this.state.tileRatio
-        })
+    handleResize(gameState) {
+        if (gameState != "lost") {
+            this.setState({
+                screen: {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    ratio: window.devicePixelRatio || 1
+                },
+                gameWrapper: {
+                    width: this.refs.child
+                        ? this.refs.child.parentNode.offsetWidth * 0.8
+                        : undefined
+                },
+                tileWidth: this.refs.child.parentNode.offsetWidth *
+                    0.8 /
+                    this.state.tileRatio
+            })
+        } else {
+            this.setState({
+                gameWrapper: { width: 400 },
+                tileWidth: 400 / this.state.tileRatio
+            })
+        }
     }
 
     handleKeys(value, e) {
@@ -120,7 +127,9 @@ class ReduxSnake extends Component {
         })
     }
 
-    componentWillReceiveProps(nextProps) {}
+    componentWillReceiveProps(nextProps) {
+        
+    }
 
     componentDidMount() {
         window.addEventListener("keyup", this.handleKeys.bind(this, false))
@@ -175,23 +184,26 @@ class ReduxSnake extends Component {
     update() {
         const context = this.state.context
         const keys = this.state.keys
-
-        if (this.state.keys.up && this.state.snakeDirection != "down") {
-            this.state.snakeDirection = "up"
-        }
-        if (this.state.keys.down && this.state.snakeDirection != "up") {
-            this.state.snakeDirection = "down"
-        }
-        if (this.state.keys.left && this.state.snakeDirection != "right") {
-            this.state.snakeDirection = "left"
-        }
-        if (this.state.keys.right && this.state.snakeDirection != "left") {
-            this.state.snakeDirection = "right"
+        if (!this.state.gamePaused) {
+            if (this.state.keys.up && this.state.snakeDirection != "down") {
+                this.state.snakeDirection = "up"
+            }
+            if (this.state.keys.down && this.state.snakeDirection != "up") {
+                this.state.snakeDirection = "down"
+            }
+            if (this.state.keys.left && this.state.snakeDirection != "right") {
+                this.state.snakeDirection = "left"
+            }
+            if (this.state.keys.right && this.state.snakeDirection != "left") {
+                this.state.snakeDirection = "right"
+            }
         }
         if (this.state.keys.pause) {
             if (!this.props.gamePaused) {
+                this.state.snakeDirection = undefined
                 this.pauseGame()
             } else {
+                this.state.snakeDirection = undefined
                 this.resumeGame()
             }
         }
@@ -250,7 +262,7 @@ class ReduxSnake extends Component {
             if (!this.props.lostGame && !this.props.gamePaused) {
                 if (this.checkCollision(headX, headY, this.state.snakeArray)) {
                     if (this.state.snakeDirection) {
-                        this.props.gameOver()
+                        this.props.gameOver("snake")
                     }
                 }
 
@@ -293,7 +305,7 @@ class ReduxSnake extends Component {
 
             if (this.checkCollision(headX, headY, this.state.wallArray)) {
                 if (this.state.snakeDirection) {
-                    this.gameOver()
+                    this.gameOver("wall")
                 }
             }
 
@@ -319,7 +331,9 @@ class ReduxSnake extends Component {
     // CHANGE GAME STATE //
 
     startGame() {
+        this.handleResize()
         this.setHighScore()
+        this.props.updateScore(1)
         this.state.snakeArray = undefined
         this.state.snakeFood = undefined
         this.state.snakeDirection = undefined
@@ -344,14 +358,15 @@ class ReduxSnake extends Component {
         this.props.resumeGame()
     }
 
-    gameOver() {
+    gameOver(collisionWith) {
         this.newHighScore()
-        this.props.gameOver()
+        this.props.gameOver(collisionWith)
+        this.handleResize("lost")
     }
 
     addToScore(points) {
         var newScore = this.props.score + points
-        this.props.addToScore(newScore)
+        this.props.updateScore(newScore)
     }
 
     setHighScore() {
@@ -477,39 +492,73 @@ class ReduxSnake extends Component {
             : 400
         return (
             <div ref="child">
-                <Segment
-                    secondary
-                    size="massive"
-                    attached="top"
-                    textAlign="left"
-                >
-                    {this.props.lostGame
-                        ? <Message negative compact floating>
-                              <Message.Header>
-                                  Game Over!
-                              </Message.Header>
-                              <Button
-                                  onClick={this.startGame.bind(this)}
-                                  content={"play again"}
-                              />
-                          </Message>
-                        : null}
 
-                    <Label floating>{this.props.score} </Label>
-
-                </Segment>
                 <Segment
                     secondary
                     attached
                     className="score current-score"
                     textAlign="center"
                 >
+                    <Label
+                        tag
+                        compact
+                        floating
+                        size={this.props.lostGame ? "massive" : ""}
+                    >
+                        <Header sub>Length</Header>
+                        <Header size="massive">{this.props.score}</Header>{" "}
+
+                    </Label>
 
                     <canvas
                         ref="canvas"
                         width={gameAreaSize}
                         height={gameAreaSize}
                     />
+
+                </Segment>
+
+                <Segment
+                    compact
+                    secondary
+                    size="massive"
+                    attached="left"
+                    textAlign="left"
+                    floating
+                >
+                    {this.props.lostGame
+                        ? <Message negative compact floating>
+                              <Message.Header>
+                                  <Header>Game Over!</Header>
+
+                                  {this.props.gameOverMessage}
+
+                              </Message.Header>
+                              <Divider />
+                              <Message.Content>
+                                  <Segment attached="top">
+                                      <Header>
+                                          you scored
+                                          {" "}
+                                          {this.props.score}
+                                          {" "}
+                                          {this.props.score > 1
+                                              ? "points!"
+                                              : "point!"}
+                                      </Header>
+                                  </Segment>
+                                  <Segment attached="bottom">
+                                      <Button
+                                          primary
+                                          onClick={this.startGame.bind(this)}
+                                          content={"play again"}
+                                      />
+                                  </Segment>
+
+                              </Message.Content>
+
+                          </Message>
+                        : null}
 
                 </Segment>
 
@@ -525,6 +574,7 @@ function mapStateToProps(state) {
         gameReady: state.game.ready,
         gameInAction: state.game.inAction,
         lostGame: state.game.over,
+        gameOverMessage: state.game.gameOverMessage,
         gameStopped: state.game.stopped,
         highScore: state.game.highScore,
         newHighScore: state.game.newHighScore,
@@ -539,7 +589,7 @@ export default connect(mapStateToProps, {
     endGame,
     gameOver,
     newGame,
-    addToScore,
+    updateScore,
     setHighScore,
     newHighScore
 })(ReduxSnake)

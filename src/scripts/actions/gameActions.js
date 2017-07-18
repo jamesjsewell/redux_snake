@@ -35,9 +35,15 @@ export function endGame() {
 	}
 }
 
-export function gameOver() {
+export function gameOver(collisionWith) {
+	var gameOverMessage = ""
+	if (collisionWith === "wall") {
+		gameOverMessage = "watch out for that wall!"
+	} else {
+		gameOverMessage = "hungry? you ate yourself!"
+	}
 	return function(dispatch) {
-		dispatch({ type: GAME_OVER, payload: "" })
+		dispatch({ type: GAME_OVER, payload: gameOverMessage })
 	}
 }
 
@@ -47,7 +53,7 @@ export function newGame() {
 	}
 }
 
-export function addToScore(newScore) {
+export function updateScore(newScore) {
 	return function(dispatch) {
 		dispatch({ type: ADD_TO_SCORE, payload: newScore })
 	}
@@ -71,4 +77,3 @@ export function newHighScore() {
 		dispatch({ type: NEW_HIGH_SCORE, payload: "" })
 	}
 }
-
