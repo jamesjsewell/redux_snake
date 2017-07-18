@@ -11,7 +11,9 @@ import {
     Input,
     Container,
     Header,
-    Divider
+    Divider,
+    Label,
+    Message
 } from "semantic-ui-react"
 
 import {
@@ -75,11 +77,11 @@ class ReduxSnake extends Component {
             inGame: false,
             snakeDirection: undefined,
             snakeArray: undefined,
-            snakeFood: {},
+            snakeFood: undefined,
             snakeColor: "#66ff66",
             snakeLength: 1,
             foodColor: "#ff0000",
-            wallArray: [],
+            wallArray: undefined,
             paused: false
         }
 
@@ -187,7 +189,11 @@ class ReduxSnake extends Component {
             this.state.snakeDirection = "right"
         }
         if (this.state.keys.pause) {
-            this.pauseGame()
+            if (!this.props.gamePaused) {
+                this.pauseGame()
+            } else {
+                this.resumeGame()
+            }
         }
 
         context.save()
@@ -208,6 +214,20 @@ class ReduxSnake extends Component {
         )
         context.globalAlpha = 1
 
+        // generate snake coords
+        if (!this.state.snakeArray) {
+            this.createSnake()
+        }
+
+        // generate wall coords
+        if (!this.state.wallArray) {
+            this.createWalls()
+        }
+
+        if (!this.state.snakeFood) {
+            this.generateFood()
+        }
+
         //place wall tiles
         for (var brick = 0; brick < this.state.wallArray.length; brick++) {
             this.placeTile(
@@ -218,7 +238,7 @@ class ReduxSnake extends Component {
         }
 
         //snake movement
-        if (this.state.snakeArray && this.props.gameInAction) {
+        if (this.state.snakeArray) {
             var headX = this.state.snakeArray[0].x
             var headY = this.state.snakeArray[0].y
 
@@ -227,7 +247,7 @@ class ReduxSnake extends Component {
             else if (this.state.snakeDirection === "up") headY--
             else if (this.state.snakeDirection === "down") headY++
 
-            if (!this.props.lostGame) {
+            if (!this.props.lostGame && !this.props.gamePaused) {
                 if (this.checkCollision(headX, headY, this.state.snakeArray)) {
                     if (this.state.snakeDirection) {
                         this.props.gameOver()
@@ -240,7 +260,7 @@ class ReduxSnake extends Component {
                     headY == this.state.snakeFood.y
                 ) {
                     var tail = { x: headX, y: headY }
-                    this.addToScore()
+                    this.addToScore(1)
 
                     this.generateFood()
                 } else {
@@ -271,28 +291,19 @@ class ReduxSnake extends Component {
                 }
             }
 
-            //generates food
-            if (this.state.snakeFood.x) {
+            if (this.checkCollision(headX, headY, this.state.wallArray)) {
+                if (this.state.snakeDirection) {
+                    this.gameOver()
+                }
+            }
+
+            // generate snake food coords
+            if (this.state.snakeFood) {
                 this.placeTile(
                     this.state.snakeFood.x,
                     this.state.snakeFood.y,
                     this.state.foodColor
                 )
-            } else {
-                this.generateFood()
-            }
-
-            //checks if snake hits a wall or itself
-            if (
-                headX == 0 ||
-                headX ==
-                    this.state.gameWrapper.width / this.state.tileWidth - 1 ||
-                headY == 0 ||
-                headY == this.state.gameWrapper.width / this.state.tileWidth - 1
-            ) {
-                if (this.state.snakeDirection) {
-                    this.props.gameOver()
-                }
             }
         }
 
@@ -308,19 +319,11 @@ class ReduxSnake extends Component {
     // CHANGE GAME STATE //
 
     startGame() {
-        this.props.startGame()
-
         this.setHighScore()
-
+        this.state.snakeArray = undefined
+        this.state.snakeFood = undefined
         this.state.snakeDirection = undefined
-
-        // generate snake
-        this.createSnake()
-
-        // generate food
-        this.generateFood()
-
-        this.createWalls()
+        this.props.startGame()
     }
 
     newGame() {
@@ -347,11 +350,8 @@ class ReduxSnake extends Component {
     }
 
     addToScore(points) {
-        if (this.state.inGame) {
-            this.setState({
-                currentScore: this.state.currentScore + points
-            })
-        }
+        var newScore = this.props.score + points
+        this.props.addToScore(newScore)
     }
 
     setHighScore() {
@@ -373,10 +373,9 @@ class ReduxSnake extends Component {
         var max = Math.floor(wall)
         var min = Math.ceil(1)
         this.state.snakeFood = {
-            x: Math.floor(Math.random() * (max - min) + min),  
+            x: Math.floor(Math.random() * (max - min) + min),
             y: Math.floor(Math.random() * (max - min) + min)
         }
-       
     }
 
     createSnake() {
@@ -385,7 +384,7 @@ class ReduxSnake extends Component {
 
         for (var i = length - 1; i >= 0; i--) {
             //This will create a horizontal snake starting from the top left
-            snakeArray.push({ x: i + 1, y: 1 })
+            snakeArray.push({ x: i + 2, y: 2 })
         }
 
         this.state.snakeArray = snakeArray
@@ -468,35 +467,51 @@ class ReduxSnake extends Component {
         // }
         //{endgame}
 
+        // switch (action.type) {
+        // case START_GAME: {
+
+        // }
+
         const gameAreaSize = this.state.gameWrapper.width
             ? this.state.gameWrapper.width
             : 400
         return (
             <div ref="child">
+                <Segment
+                    secondary
+                    size="massive"
+                    attached="top"
+                    textAlign="left"
+                >
+                    {this.props.lostGame
+                        ? <Message negative compact floating>
+                              <Message.Header>
+                                  Game Over!
+                              </Message.Header>
+                              <Button
+                                  onClick={this.startGame.bind(this)}
+                                  content={"play again"}
+                              />
+                          </Message>
+                        : null}
 
-                <Header className="score current-score">
-                    length: {this.state.snakeLength}
-                </Header>
-                <Header sub className="score top-score">
-                    high score: {this.state.topScore}
-                </Header>
-                {this.props.gameInAction
-                    ? null
-                    : <Button
-                          onClick={() => {
-                              this.startGame()
-                          }}
-                          type="button"
-                      >
-                          start
-                      </Button>}
-                <Divider />
+                    <Label floating>{this.props.score} </Label>
 
-                <canvas
-                    ref="canvas"
-                    width={gameAreaSize}
-                    height={gameAreaSize}
-                />
+                </Segment>
+                <Segment
+                    secondary
+                    attached
+                    className="score current-score"
+                    textAlign="center"
+                >
+
+                    <canvas
+                        ref="canvas"
+                        width={gameAreaSize}
+                        height={gameAreaSize}
+                    />
+
+                </Segment>
 
             </div>
         )

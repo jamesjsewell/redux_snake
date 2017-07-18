@@ -14,47 +14,39 @@ import {
 import _ from "underscore"
 
 const INITIAL_STATE = {
-	new: true,
 	paused: false,
-	ready: true,
 	inAction: false,
 	over: false,
 	stopped: true,
 	highScore: undefined,
 	newHighScore: undefined,
-	score: undefined
+	score: 1
 }
 
 export default function(state = INITIAL_STATE, action) {
 	switch (action.type) {
 		case START_GAME: {
-			return _.extend({}, state, { new: true, newHighScore: false, inAction: true })
+			return _.extend({}, state, { newHighScore: false, inAction: true, over: false, paused: false })
 		}
 
 		case PAUSE_GAME: {
 			return _.extend({}, state, {
-				paused: true,
-				inAction: false,
-				over: false
+				paused: true
 			})
 		}
 
 		case RESUME_GAME: {
 			return _.extend({}, state, {
-				paused: false,
-				inAction: true,
-				over: false
+				paused: false
 			})
 		}
 
 		case GAME_OVER: {
+
 			return _.extend({}, state, {
 				paused: false,
 				inAction: true,
-				over: true,
-				stopped: false,
-				ready: false,
-				new: false
+				over: true
 			})
 		}
 
@@ -63,9 +55,7 @@ export default function(state = INITIAL_STATE, action) {
 				paused: false,
 				inAction: false,
 				over: false,
-				stopped: true,
-				ready: true,
-				new: false
+				stopped: true
 			})
 		}
 
@@ -73,10 +63,7 @@ export default function(state = INITIAL_STATE, action) {
 			return _.extend({}, state, {
 				paused: false,
 				inAction: true,
-				over: false,
 				stopped: false,
-				ready: false,
-				new: true,
 				newHighScore: false
 			})
 		}
