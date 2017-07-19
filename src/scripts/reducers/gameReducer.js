@@ -52,24 +52,6 @@ export default function(state = INITIAL_STATE, action) {
 			})
 		}
 
-		case END_GAME: {
-			return _.extend({}, state, {
-				paused: false,
-				inAction: false,
-				over: false,
-				stopped: true
-			})
-		}
-
-		case NEW_GAME: {
-			return _.extend({}, state, {
-				paused: false,
-				inAction: true,
-				stopped: false,
-				newHighScore: false
-			})
-		}
-
 		case ADD_TO_SCORE: {
 			return _.extend({}, state, { score: action.payload })
 		}

@@ -90,7 +90,12 @@ class ReduxSnake extends Component {
     }
 
     handleResize(gameState) {
-        if (gameState != "lost") {
+        if (gameState === "lost" || gameState === "paused" || this.props.lostGame) {
+            this.setState({
+                gameWrapper: { width: 400 },
+                tileWidth: 400 / this.state.tileRatio
+            })
+        } else if(gameState === "resume" || gameState === "") {
             this.setState({
                 screen: {
                     width: window.innerWidth,
@@ -106,11 +111,6 @@ class ReduxSnake extends Component {
                     0.8 /
                     this.state.tileRatio
             })
-        } else {
-            this.setState({
-                gameWrapper: { width: 400 },
-                tileWidth: 400 / this.state.tileRatio
-            })
         }
     }
 
@@ -121,15 +121,13 @@ class ReduxSnake extends Component {
         if (e.keyCode === KEY.UP || e.keyCode === KEY.W) keys.up = value
         if (e.keyCode === KEY.DOWN || e.keyCode === KEY.S) keys.down = value
         if (e.keyCode === KEY.SPACE) keys.space = value
-        if (e.keyCode === KEY.P || e.keyCode === KEY.SPACE) keys.pause = value
+        if (e.keyCode === KEY.P) keys.pause = value
         this.setState({
             keys: keys
         })
     }
 
-    componentWillReceiveProps(nextProps) {
-        
-    }
+    componentWillReceiveProps(nextProps) {}
 
     componentDidMount() {
         window.addEventListener("keyup", this.handleKeys.bind(this, false))
@@ -182,31 +180,16 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
-        const context = this.state.context
-        const keys = this.state.keys
-        if (!this.state.gamePaused) {
-            if (this.state.keys.up && this.state.snakeDirection != "down") {
-                this.state.snakeDirection = "up"
-            }
-            if (this.state.keys.down && this.state.snakeDirection != "up") {
-                this.state.snakeDirection = "down"
-            }
-            if (this.state.keys.left && this.state.snakeDirection != "right") {
-                this.state.snakeDirection = "left"
-            }
-            if (this.state.keys.right && this.state.snakeDirection != "left") {
-                this.state.snakeDirection = "right"
-            }
-        }
-        if (this.state.keys.pause) {
+        if (this.state.keys.pause && !this.props.lostGame) {
             if (!this.props.gamePaused) {
-                this.state.snakeDirection = undefined
+                
                 this.pauseGame()
             } else {
-                this.state.snakeDirection = undefined
+                
                 this.resumeGame()
             }
         }
+        const context = this.state.context
 
         context.save()
         context.scale(1, 1)
@@ -261,8 +244,8 @@ class ReduxSnake extends Component {
 
             if (!this.props.lostGame && !this.props.gamePaused) {
                 if (this.checkCollision(headX, headY, this.state.snakeArray)) {
-                    if (this.state.snakeDirection) {
-                        this.props.gameOver("snake")
+                    if (this.state.snakeDirection && this.state.snakeArray.length > 5) {
+                        this.gameOver("snake")
                     }
                 }
 
@@ -331,13 +314,27 @@ class ReduxSnake extends Component {
     // CHANGE GAME STATE //
 
     startGame() {
-        this.handleResize()
         this.setHighScore()
         this.props.updateScore(1)
         this.state.snakeArray = undefined
         this.state.snakeFood = undefined
         this.state.snakeDirection = undefined
         this.props.startGame()
+        this.setState({
+            screen: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                ratio: window.devicePixelRatio || 1
+            },
+            gameWrapper: {
+                width: this.refs.child
+                    ? this.refs.child.parentNode.offsetWidth * 0.8
+                    : undefined
+            },
+            tileWidth: this.refs.child.parentNode.offsetWidth *
+                0.8 /
+                this.state.tileRatio
+        })
     }
 
     newGame() {
@@ -346,6 +343,7 @@ class ReduxSnake extends Component {
     }
 
     pauseGame() {
+        this.handleResize("paused")
         this.props.pauseGame()
     }
 
@@ -355,13 +353,14 @@ class ReduxSnake extends Component {
     }
 
     resumeGame() {
+        this.handleResize('resume')
         this.props.resumeGame()
     }
 
     gameOver(collisionWith) {
         this.newHighScore()
-        this.props.gameOver(collisionWith)
         this.handleResize("lost")
+        this.props.gameOver(collisionWith)
     }
 
     addToScore(points) {
@@ -375,10 +374,10 @@ class ReduxSnake extends Component {
     }
 
     newHighScore() {
-        if (this.props.score > this.props.highScore) {
-            localStorage["snakeHighScore"] = this.props.score
-            this.props.newHighScore(this.props.score)
-        }
+        // if (this.props.score > this.props.highScore) {
+        //     localStorage["snakeHighScore"] = this.props.score
+        //     this.props.newHighScore(this.props.score)
+        // }
     }
 
     // GAME ENTITY LOGIC //
@@ -486,6 +485,21 @@ class ReduxSnake extends Component {
         // case START_GAME: {
 
         // }
+        const keys = this.state.keys
+        if (!this.props.gamePaused) {
+            if (this.state.keys.up && this.state.snakeDirection != "down") {
+                this.state.snakeDirection = "up"
+            }
+            if (this.state.keys.down && this.state.snakeDirection != "up") {
+                this.state.snakeDirection = "down"
+            }
+            if (this.state.keys.left && this.state.snakeDirection != "right") {
+                this.state.snakeDirection = "left"
+            }
+            if (this.state.keys.right && this.state.snakeDirection != "left") {
+                this.state.snakeDirection = "right"
+            }
+        }
 
         const gameAreaSize = this.state.gameWrapper.width
             ? this.state.gameWrapper.width
@@ -493,9 +507,15 @@ class ReduxSnake extends Component {
         return (
             <div ref="child">
 
+                <Segment textAlign="left" attached="top" tertiary>
+                    <Header>[P] to pause</Header>
+                    
+                </Segment>
+
                 <Segment
+
                     secondary
-                    attached
+                    attached="bottom"
                     className="score current-score"
                     textAlign="center"
                 >
@@ -526,10 +546,33 @@ class ReduxSnake extends Component {
                     textAlign="left"
                     floating
                 >
-                    {this.props.lostGame
-                        ? <Message negative compact floating>
+                    {this.props.gamePaused
+                        ? <Message floating>
                               <Message.Header>
-                                  <Header>Game Over!</Header>
+                                  <Header>Game Paused</Header>
+
+                              </Message.Header>
+                              <Divider />
+                              <Message.Content>
+                                  <Segment attached="top">
+                                      <Header>
+                                          <Button
+                                              primary
+                                              onClick={this.resumeGame.bind(
+                                                  this
+                                              )}
+                                              content={"resume"}
+                                          />
+                                      </Header>
+                                  </Segment>
+
+                              </Message.Content>
+
+                          </Message>
+                        : null}
+                    {this.props.lostGame
+                        ? <Message compact floating>
+                              <Message.Header textAlign="center">
 
                                   {this.props.gameOverMessage}
 

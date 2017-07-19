@@ -38,9 +38,9 @@ export function endGame() {
 export function gameOver(collisionWith) {
 	var gameOverMessage = ""
 	if (collisionWith === "wall") {
-		gameOverMessage = "watch out for that wall!"
+		gameOverMessage = "watch out for that wall"
 	} else {
-		gameOverMessage = "hungry? you ate yourself!"
+		gameOverMessage = "you ate yourself"
 	}
 	return function(dispatch) {
 		dispatch({ type: GAME_OVER, payload: gameOverMessage })
