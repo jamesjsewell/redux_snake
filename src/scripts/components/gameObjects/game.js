@@ -92,16 +92,32 @@ class ReduxSnake extends Component {
     }
 
     handleResize(gameState) {
-        if (
-            gameState === "lost" ||
-            gameState === "paused" ||
-            this.props.lostGame
-        ) {
+        var width = this.refs.child.parentNode.offsetWidth
+        var height = window.innerHeight
+        var remainder = ""
+        var gameSize = ""
+        if (width > height) {
+            remainder = width - height
+            if (remainder > 0) {
+                gameSize = height
+            } else {
+                gameSize = width
+            }
+        } else if (width < height) {
+            remainder = height - width
+            if (remainder > 0) {
+                gameSize = width
+            } else {
+                gameSize = width
+            }
+        }
+
+        if (gameState === "lost" || gameState === "paused") {
             this.setState({
                 gameWrapper: { width: 400 },
                 tileWidth: 400 / this.state.tileRatio
             })
-        } else if (gameState === "resume" || gameState === "") {
+        } else if (gameState === "resume" || !gameState) {
             this.setState({
                 screen: {
                     width: window.innerWidth,
@@ -109,13 +125,9 @@ class ReduxSnake extends Component {
                     ratio: window.devicePixelRatio || 1
                 },
                 gameWrapper: {
-                    width: this.refs.child
-                        ? window.innerHeight * 0.8
-                        : undefined
+                    width: gameSize * 0.6
                 },
-                tileWidth: this.refs.child.parentNode.offsetWidth *
-                    0.8 /
-                    this.state.tileRatio
+                tileWidth: gameSize * 0.6 / this.state.tileRatio
             })
         }
     }
@@ -140,6 +152,7 @@ class ReduxSnake extends Component {
     }
 
     componentDidMount() {
+        this.handleResize("resume")
         window.addEventListener("keyup", this.handleKeys.bind(this, false))
         window.addEventListener("keydown", this.handleKeys.bind(this, true))
         window.addEventListener("resize", this.handleResize.bind(this, false))
@@ -147,15 +160,7 @@ class ReduxSnake extends Component {
         const context = this.refs.canvas.getContext("2d")
 
         this.setState({
-            context: context,
-            gameWrapper: {
-                width: this.refs.child
-                    ? this.refs.child.parentNode.offsetWidth * 0.8
-                    : undefined
-            },
-            tileWidth: this.refs.child.parentNode.offsetWidth *
-                0.8 /
-                this.state.tileRatio
+            context: context
         })
 
         window.requestAnimationFrame =
@@ -243,25 +248,33 @@ class ReduxSnake extends Component {
 
         //snake movement
         if (this.state.snakeArray) {
-
             var headX = this.state.snakeArray[0].x
             var headY = this.state.snakeArray[0].y
 
             if (!this.props.lostGame && !this.state.paused) {
                 var transitioned = false
-                if (this.state.snakeDirection === "right" && transitioned === false){
+                if (
+                    this.state.snakeDirection === "right" &&
+                    transitioned === false
+                ) {
                     transitioned = true
                     headX++
-                } 
-                else if (this.state.snakeDirection === "left" && transitioned === false){
+                } else if (
+                    this.state.snakeDirection === "left" &&
+                    transitioned === false
+                ) {
                     transitioned = true
                     headX--
-                }
-                else if (this.state.snakeDirection === "up" && transitioned === false){
-                    transitioned = true 
+                } else if (
+                    this.state.snakeDirection === "up" &&
+                    transitioned === false
+                ) {
+                    transitioned = true
                     headY--
-                } 
-                else if (this.state.snakeDirection === "down" && transitioned === false){
+                } else if (
+                    this.state.snakeDirection === "down" &&
+                    transitioned === false
+                ) {
                     transitioned = true
                     headY++
                 }
@@ -363,21 +376,6 @@ class ReduxSnake extends Component {
         this.state.snakeDirection = undefined
         this.state.newDirection = undefined
         this.props.startGame()
-        this.setState({
-            screen: {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                ratio: window.devicePixelRatio || 1
-            },
-            gameWrapper: {
-                width: this.refs.child
-                    ? this.refs.child.parentNode.offsetWidth * 0.8
-                    : undefined
-            },
-            tileWidth: this.refs.child.parentNode.offsetWidth *
-                0.8 /
-                this.state.tileRatio
-        })
     }
 
     pauseGame() {
@@ -636,7 +634,10 @@ class ReduxSnake extends Component {
                                   <Segment attached="bottom">
                                       <Button
                                           primary
-                                          onClick={this.startGame.bind(this)}
+                                          onClick={() => {
+                                              this.startGame()
+                                              this.handleResize("resume")
+                                          }}
                                           content={"play again"}
                                       />
                                   </Segment>
