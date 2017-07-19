@@ -79,6 +79,7 @@ class ReduxSnake extends Component {
             snakeArray: undefined,
             snakeFood: undefined,
             snakeColor: "#66ff66",
+            snakeHeadColor: "#329b32",
             snakeLength: 1,
             foodColor: "#ff0000",
             wallArray: undefined,
@@ -90,12 +91,16 @@ class ReduxSnake extends Component {
     }
 
     handleResize(gameState) {
-        if (gameState === "lost" || gameState === "paused" || this.props.lostGame) {
+        if (
+            gameState === "lost" ||
+            gameState === "paused" ||
+            this.props.lostGame
+        ) {
             this.setState({
                 gameWrapper: { width: 400 },
                 tileWidth: 400 / this.state.tileRatio
             })
-        } else if(gameState === "resume" || gameState === "") {
+        } else if (gameState === "resume" || gameState === "") {
             this.setState({
                 screen: {
                     width: window.innerWidth,
@@ -180,13 +185,13 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
+        var gameOver = false
+        var snakeHit = ""
+
         if (this.state.keys.pause && !this.props.lostGame) {
             if (!this.props.gamePaused) {
-                
                 this.pauseGame()
             } else {
-                
-                this.resumeGame()
             }
         }
         const context = this.state.context
@@ -219,6 +224,7 @@ class ReduxSnake extends Component {
             this.createWalls()
         }
 
+        // generate snake food coords
         if (!this.state.snakeFood) {
             this.generateFood()
         }
@@ -244,8 +250,16 @@ class ReduxSnake extends Component {
 
             if (!this.props.lostGame && !this.props.gamePaused) {
                 if (this.checkCollision(headX, headY, this.state.snakeArray)) {
-                    if (this.state.snakeDirection && this.state.snakeArray.length > 5) {
-                        this.gameOver("snake")
+                    if (
+                        this.state.snakeDirection &&
+                        this.state.snakeArray.length > 5
+                    ) {
+                        if (this.state.snakeDirection === "right") headX++
+                        else if (this.state.snakeDirection === "left") headX--
+                        else if (this.state.snakeDirection === "up") headY--
+                        else if (this.state.snakeDirection === "down") headY++
+                        snakeHit = "snake"
+                        gameOver = true
                     }
                 }
 
@@ -281,14 +295,17 @@ class ReduxSnake extends Component {
                     this.placeTile(
                         snakeTile.x,
                         snakeTile.y,
-                        this.state.snakeColor
+                        i === 0
+                            ? this.state.snakeHeadColor
+                            : this.state.snakeColor
                     )
                 }
             }
 
             if (this.checkCollision(headX, headY, this.state.wallArray)) {
                 if (this.state.snakeDirection) {
-                    this.gameOver("wall")
+                    snakeHit = "wall"
+                    gameOver = true
                 }
             }
 
@@ -309,6 +326,10 @@ class ReduxSnake extends Component {
                 this.update()
             })
         }, 1000 / frameRate)
+
+        if (gameOver === true) {
+            this.gameOver(snakeHit)
+        }
     }
 
     // CHANGE GAME STATE //
@@ -353,7 +374,7 @@ class ReduxSnake extends Component {
     }
 
     resumeGame() {
-        this.handleResize('resume')
+        this.handleResize("resume")
         this.props.resumeGame()
     }
 
@@ -370,14 +391,17 @@ class ReduxSnake extends Component {
 
     setHighScore() {
         var highScore = ""
-        this.props.setHighScore(highScore)
+        if (localStorage["snakeHighScore"]) {
+            var highScore = localStorage["snakeHighScore"]
+            this.props.setHighScore(highScore)
+        }
     }
 
     newHighScore() {
-        // if (this.props.score > this.props.highScore) {
-        //     localStorage["snakeHighScore"] = this.props.score
-        //     this.props.newHighScore(this.props.score)
-        // }
+        if (this.props.score > this.props.highScore) {
+            localStorage["snakeHighScore"] = this.props.score
+            this.props.newHighScore(this.props.score)
+        }
     }
 
     // GAME ENTITY LOGIC //
@@ -450,41 +474,6 @@ class ReduxSnake extends Component {
     }
 
     render() {
-        //let endgame
-        //let message
-        //   if (this.state.currentScore <= 0) {
-        //     message = "0 points... So sad."
-        // } else if (this.state.currentScore >= this.state.topScore) {
-        //     message =
-        //         "Top score with " + this.state.currentScore + " points. Woo!"
-        // } else {
-        //     message = this.state.currentScore + " Points though :)"
-        // }
-
-        // if (!this.state.inGame) {
-        //     endgame = (
-        //         <div className="endgame">
-        //             <p>Game over!</p>
-        //             <p>{message}</p>
-        //             <button onClick={this.startGame.bind(this)}>
-        //                 try again?
-        //             </button>
-        //         </div>
-        //     )
-        // }
-        // if (!this.state.dataLoaded && this.state.inGame) {
-        //     var loading = (
-        //         <div className="endgame">
-        //             <p>Loading</p>
-        //         </div>
-        //     )
-        // }
-        //{endgame}
-
-        // switch (action.type) {
-        // case START_GAME: {
-
-        // }
         const keys = this.state.keys
         if (!this.props.gamePaused) {
             if (this.state.keys.up && this.state.snakeDirection != "down") {
@@ -509,11 +498,10 @@ class ReduxSnake extends Component {
 
                 <Segment textAlign="left" attached="top" tertiary>
                     <Header>[P] to pause</Header>
-                    
+
                 </Segment>
 
                 <Segment
-
                     secondary
                     attached="bottom"
                     className="score current-score"
