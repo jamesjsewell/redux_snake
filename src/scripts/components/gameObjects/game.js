@@ -92,8 +92,28 @@ class ReduxSnake extends Component {
     }
 
     handleResize(gameState) {
+        // var width = this.refs.child.parentNode.offsetWidth
+        // var height = window.innerHeight
+        // var remainder = ""
+        // var gameSize = ""
+        // if (width > height) {
+        //     remainder = width - height
+        //     if (remainder > 0) {
+        //         gameSize = height
+        //     } else {
+        //         gameSize = width
+        //     }
+        // } else if (width < height) {
+        //     remainder = height - width
+        //     if (remainder > 0) {
+        //         gameSize = width
+        //     } else {
+        //         gameSize = width
+        //     }
+        // }
+
         var width = this.refs.child.parentNode.offsetWidth
-        var height = window.innerHeight
+        var height = this.refs.child.parentNode.offsetHeight
         var remainder = ""
         var gameSize = ""
         if (width > height) {
@@ -112,24 +132,17 @@ class ReduxSnake extends Component {
             }
         }
 
-        if (gameState === "lost" || gameState === "paused") {
-            this.setState({
-                gameWrapper: { width: 400 },
-                tileWidth: 400 / this.state.tileRatio
-            })
-        } else if (gameState === "resume" || !gameState) {
-            this.setState({
-                screen: {
-                    width: window.innerWidth,
-                    height: window.innerHeight,
-                    ratio: window.devicePixelRatio || 1
-                },
-                gameWrapper: {
-                    width: gameSize * 0.6
-                },
-                tileWidth: gameSize * 0.6 / this.state.tileRatio
-            })
-        }
+        this.setState({
+            screen: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                ratio: window.devicePixelRatio || 1
+            },
+            gameWrapper: {
+                width: gameSize * .8
+            },
+            tileWidth: gameSize * .8 / this.state.tileRatio
+        })
     }
 
     handleKeys(value, e) {
@@ -536,120 +549,146 @@ class ReduxSnake extends Component {
             ? this.state.gameWrapper.width
             : 400
         return (
-            <div ref="child">
+            <Grid stretched container responsive relaxed>
 
-                <Segment textAlign="left" attached="top" tertiary compact>
+                <Grid.Row columns="equal">
 
-                    <Header>[P] to pause</Header>
+                    {this.props.lostGame || this.props.gamePaused
+                        ? <Grid.Column>
+                              <Segment
+                                  compact
+                                  secondary
+                                  size="massive"
+                                  attached="left"
+                                  textAlign="left"
+                                  floating
+                              >
+                                  {this.props.gamePaused
+                                      ? <Message floating>
+                                            <Message.Header>
+                                                <Header>game paused</Header>
 
-                </Segment>
+                                            </Message.Header>
+                                            <Divider />
+                                            <Message.Content>
+                                                <Segment attached="top">
+                                                    <Header>
+                                                        <Button
+                                                            primary
+                                                            onClick={this.resumeGame.bind(
+                                                                this
+                                                            )}
+                                                            content={"resume"}
+                                                        />
+                                                    </Header>
+                                                </Segment>
 
-                <Segment
-                    secondary
-                    attached="bottom"
-                    className="score current-score"
-                    textAlign="center"
-                >
-                    <Label
-                        tag
-                        compact
-                        floating
-                        size={this.props.lostGame ? "massive" : ""}
-                    >
-                        <Header sub>Length</Header>
-                        <Header size="massive">{this.props.score}</Header>{" "}
+                                            </Message.Content>
 
-                        <Divider />
+                                        </Message>
+                                      : null}
+                                  {this.props.lostGame
+                                      ? <Message compact floating>
+                                            <Message.Header textAlign="center">
 
-                        {this.props.highScore
-                            ? "high score: " + this.props.highScore
-                            : null}
+                                                <Header>
+                                                    {this.props.beatHighScore
+                                                        ? "new high score!"
+                                                        : this.props
+                                                              .gameOverMessage}
+                                                </Header>
 
-                    </Label>
+                                            </Message.Header>
+                                            <Divider />
+                                            <Message.Content>
+                                                <Segment attached="top">
+                                                    <Header>
+                                                        you scored
+                                                        {" "}
+                                                        {this.props.score}
+                                                        {" "}
+                                                        {this.props.score > 1
+                                                            ? "points!"
+                                                            : "point!"}
+                                                    </Header>
+                                                </Segment>
+                                                <Segment attached="bottom">
+                                                    <Button
+                                                        primary
+                                                        onClick={() => {
+                                                            this.startGame()
+                                                            this.handleResize(
+                                                                "resume"
+                                                            )
+                                                        }}
+                                                        content={"play again"}
+                                                    />
+                                                </Segment>
 
-                    <canvas
-                        ref="canvas"
-                        width={gameAreaSize}
-                        height={gameAreaSize}
-                    />
+                                            </Message.Content>
 
-                </Segment>
+                                        </Message>
+                                      : null}
 
-                <Segment
-                    compact
-                    secondary
-                    size="massive"
-                    attached="left"
-                    textAlign="left"
-                    floating
-                >
-                    {this.props.gamePaused
-                        ? <Message floating>
-                              <Message.Header>
-                                  <Header>game paused</Header>
+                              </Segment>
 
-                              </Message.Header>
-                              <Divider />
-                              <Message.Content>
-                                  <Segment attached="top">
-                                      <Header>
-                                          <Button
-                                              primary
-                                              onClick={this.resumeGame.bind(
-                                                  this
-                                              )}
-                                              content={"resume"}
-                                          />
-                                      </Header>
-                                  </Segment>
-
-                              </Message.Content>
-
-                          </Message>
-                        : null}
-                    {this.props.lostGame
-                        ? <Message compact floating>
-                              <Message.Header textAlign="center">
-
-                                  <Header>
-                                      {this.props.beatHighScore
-                                          ? "new high score!"
-                                          : this.props.gameOverMessage}
-                                  </Header>
-
-                              </Message.Header>
-                              <Divider />
-                              <Message.Content>
-                                  <Segment attached="top">
-                                      <Header>
-                                          you scored
-                                          {" "}
-                                          {this.props.score}
-                                          {" "}
-                                          {this.props.score > 1
-                                              ? "points!"
-                                              : "point!"}
-                                      </Header>
-                                  </Segment>
-                                  <Segment attached="bottom">
-                                      <Button
-                                          primary
-                                          onClick={() => {
-                                              this.startGame()
-                                              this.handleResize("resume")
-                                          }}
-                                          content={"play again"}
-                                      />
-                                  </Segment>
-
-                              </Message.Content>
-
-                          </Message>
+                          </Grid.Column>
                         : null}
 
-                </Segment>
+                    <Grid.Column>
+                        <div ref="child">
 
-            </div>
+                            <Segment
+                                textAlign="left"
+                                attached="top"
+                                tertiary
+                                compact
+                            >
+
+                                <Header>[P] to pause</Header>
+
+                            </Segment>
+
+                            <Segment
+                                secondary
+                                attached="bottom"
+                                className="score current-score"
+                                textAlign="center"
+                            >
+                                <Label
+                                    tag
+                                    compact
+                                    floating
+                                    size={this.props.lostGame ? "massive" : ""}
+                                >
+                                    <Header sub>Length</Header>
+                                    <Header size="massive">
+                                        {this.props.score}
+                                    </Header>
+                                    {" "}
+
+                                    <Divider />
+
+                                    {this.props.highScore
+                                        ? "high score: " + this.props.highScore
+                                        : null}
+
+                                </Label>
+
+                                <canvas
+                                    ref="canvas"
+                                    width={gameAreaSize}
+                                    height={gameAreaSize}
+                                />
+
+                            </Segment>
+
+                        </div>
+
+                    </Grid.Column>
+
+                </Grid.Row>
+            </Grid>
         )
     }
 }

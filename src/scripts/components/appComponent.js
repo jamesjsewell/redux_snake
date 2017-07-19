@@ -50,7 +50,7 @@ class RouteConfig extends Component {
         return (
             <Router>
 
-                <Container as={Segment} secondary stretched>
+                <Container secondary stretched fluid>
 
                     <Dimmer active={this.props.loadingData} page>
 

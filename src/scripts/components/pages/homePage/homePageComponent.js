@@ -24,10 +24,14 @@ class HomePage extends Component {
 
     render() {
         return (
-            <Container textAlign="center">
-                <ReduxSnake />
+            <Grid stretched fluid textAlign="center">
+                <Grid.Row stretched>
+                    <Grid.Column>
+                        <ReduxSnake />
+                    </Grid.Column>
+                </Grid.Row>
 
-            </Container>
+            </Grid>
         )
     }
 }
