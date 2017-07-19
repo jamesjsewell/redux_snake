@@ -76,6 +76,7 @@ class ReduxSnake extends Component {
             topScore: localStorage["topscore"] || 0,
             inGame: false,
             snakeDirection: undefined,
+            newDirection: undefined,
             snakeArray: undefined,
             snakeFood: undefined,
             snakeColor: "#66ff66",
@@ -187,33 +188,8 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
-        const keys = this.state.keys
-        var transitioned = false
-        if (!this.state.paused) {
+        var newDirection = this.state.newDirection
 
-            if (this.state.keys.up && this.state.snakeDirection != "down" && transitioned === false) {
-                transitioned = true
-                this.state.snakeDirection = "up"
-            }
-            if (this.state.keys.down && this.state.snakeDirection != "up" && transitioned === false) {
-                transitioned = true
-                this.state.snakeDirection = "down"
-            }
-            if (this.state.keys.left && this.state.snakeDirection != "right" && transitioned === false) {
-                transitioned = true
-                this.state.snakeDirection = "left"
-            }
-            if (this.state.keys.right && this.state.snakeDirection != "left" && transitioned === false) {
-                transitioned = true
-                this.state.snakeDirection = "right"
-            }
-            if (this.state.keys.pause && !this.props.lostGame) {
-                if (!this.state.paused) {
-                    this.state.paused = true
-                } else {
-                }
-            }
-        }
         if (this.state.paused) {
             this.pauseGame()
         }
@@ -267,14 +243,28 @@ class ReduxSnake extends Component {
 
         //snake movement
         if (this.state.snakeArray) {
+
             var headX = this.state.snakeArray[0].x
             var headY = this.state.snakeArray[0].y
 
             if (!this.props.lostGame && !this.state.paused) {
-                if (this.state.snakeDirection === "right") headX++
-                else if (this.state.snakeDirection === "left") headX--
-                else if (this.state.snakeDirection === "up") headY--
-                else if (this.state.snakeDirection === "down") headY++
+                var transitioned = false
+                if (this.state.snakeDirection === "right" && transitioned === false){
+                    transitioned = true
+                    headX++
+                } 
+                else if (this.state.snakeDirection === "left" && transitioned === false){
+                    transitioned = true
+                    headX--
+                }
+                else if (this.state.snakeDirection === "up" && transitioned === false){
+                    transitioned = true 
+                    headY--
+                } 
+                else if (this.state.snakeDirection === "down" && transitioned === false){
+                    transitioned = true
+                    headY++
+                }
                 if (this.checkCollision(headX, headY, this.state.snakeArray)) {
                     if (
                         this.state.snakeDirection &&
@@ -328,7 +318,10 @@ class ReduxSnake extends Component {
                 }
             }
 
-            if (this.checkCollision(headX, headY, this.state.wallArray)) {
+            if (
+                this.checkCollision(headX, headY, this.state.wallArray) &&
+                !gameOver
+            ) {
                 if (this.state.snakeDirection) {
                     snakeHit = "wall"
                     gameOver = true
@@ -346,6 +339,8 @@ class ReduxSnake extends Component {
         }
 
         context.restore()
+
+        this.state.snakeDirection = this.state.newDirection
 
         setTimeout(() => {
             requestAnimationFrame(() => {
@@ -366,6 +361,7 @@ class ReduxSnake extends Component {
         this.state.snakeArray = undefined
         this.state.snakeFood = undefined
         this.state.snakeDirection = undefined
+        this.state.newDirection = undefined
         this.props.startGame()
         this.setState({
             screen: {
@@ -497,6 +493,47 @@ class ReduxSnake extends Component {
     }
 
     render() {
+        var transitioned = false
+        if (!this.state.paused) {
+            if (
+                this.state.keys.up &&
+                this.state.snakeDirection != "down" &&
+                transitioned === false
+            ) {
+                transitioned = true
+                this.state.newDirection = "up"
+            }
+            if (
+                this.state.keys.down &&
+                this.state.snakeDirection != "up" &&
+                transitioned === false
+            ) {
+                transitioned = true
+                this.state.newDirection = "down"
+            }
+            if (
+                this.state.keys.left &&
+                this.state.snakeDirection != "right" &&
+                transitioned === false
+            ) {
+                transitioned = true
+                this.state.newDirection = "left"
+            }
+            if (
+                this.state.keys.right &&
+                this.state.snakeDirection != "left" &&
+                transitioned === false
+            ) {
+                transitioned = true
+                this.state.newDirection = "right"
+            }
+            if (this.state.keys.pause && !this.props.lostGame) {
+                if (!this.state.paused) {
+                    this.state.paused = true
+                } else {
+                }
+            }
+        }
         const gameAreaSize = this.state.gameWrapper.width
             ? this.state.gameWrapper.width
             : 400
