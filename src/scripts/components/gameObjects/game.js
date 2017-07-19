@@ -35,7 +35,7 @@ var theDay = theDate[2]
 var theMonth = theDate[1]
 var theYear = theDate[3]
 
-const frameRate = 10
+const frameRate = 12
 
 const KEY = {
     LEFT: 37,
@@ -112,36 +112,39 @@ class ReduxSnake extends Component {
         //     }
         // }
 
-        var width = this.refs.child.parentNode.offsetWidth
-        var height = this.refs.child.parentNode.offsetHeight
-        var remainder = ""
-        var gameSize = ""
-        if (width > height) {
-            remainder = width - height
-            if (remainder > 0) {
-                gameSize = height
-            } else {
-                gameSize = width
-            }
-        } else if (width < height) {
-            remainder = height - width
-            if (remainder > 0) {
-                gameSize = width
-            } else {
-                gameSize = width
-            }
-        }
+        // var width = this.refs.child.parentNode.offsetWidth
+        // var height = this.refs.child.parentNode.offsetHeight
+        // var remainder = ""
+        // var gameSize = ""
+        // if (width > height) {
+        //     remainder = width - height
+        //     if (remainder > 0) {
+        //         gameSize = height
+        //     } else {
+        //         gameSize = width
+        //     }
+        // } else if (width < height) {
+        //     remainder = height - width
+        //     if (remainder > 0) {
+        //         gameSize = width
+        //     } else {
+        //         gameSize = width
+        //     }
+        // }
 
+        //
+        // screen: {
+        //                 width: window.innerWidth,
+        //                 height: window.innerHeight,
+        //                 ratio: window.devicePixelRatio || 1
+        //             },
         this.setState({
-            screen: {
-                width: window.innerWidth,
-                height: window.innerHeight,
-                ratio: window.devicePixelRatio || 1
-            },
             gameWrapper: {
-                width: gameSize * .8
+                width: this.refs.child.parentNode.offsetWidth * 0.7
             },
-            tileWidth: gameSize * .8 / this.state.tileRatio
+            tileWidth: this.refs.child.parentNode.offsetWidth *
+                0.7 /
+                this.state.tileRatio
         })
     }
 
@@ -206,6 +209,13 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
+        if (
+            this.refs.child.parentNode.offsetWidth * 0.7 !=
+            this.state.gameWrapper.width
+        ) { 
+            console.log('switched window size')
+            this.handleResize()
+        }
         var newDirection = this.state.newDirection
 
         if (this.state.paused) {
@@ -389,6 +399,7 @@ class ReduxSnake extends Component {
         this.state.snakeDirection = undefined
         this.state.newDirection = undefined
         this.props.startGame()
+        this.handleResize()
     }
 
     pauseGame() {
@@ -546,15 +557,14 @@ class ReduxSnake extends Component {
             }
         }
         const gameAreaSize = this.state.gameWrapper.width
-            ? this.state.gameWrapper.width
-            : 400
-        return (
-            <Grid stretched container responsive relaxed>
 
-                <Grid.Row columns="equal">
+        return (
+            <Grid stretched container>
+
+                <Grid.Row>
 
                     {this.props.lostGame || this.props.gamePaused
-                        ? <Grid.Column>
+                        ? <Grid.Column width={4}>
                               <Segment
                                   compact
                                   secondary
@@ -563,7 +573,7 @@ class ReduxSnake extends Component {
                                   textAlign="left"
                                   floating
                               >
-                                  {this.props.gamePaused
+                                  {this.state.paused
                                       ? <Message floating>
                                             <Message.Header>
                                                 <Header>game paused</Header>
@@ -635,8 +645,15 @@ class ReduxSnake extends Component {
                           </Grid.Column>
                         : null}
 
-                    <Grid.Column>
-                        <div ref="child">
+                    <Grid.Column
+                        width={
+                            !this.props.lostGame && !this.state.paused ? 16 : 12
+                        }
+                    >
+                        <div
+                            ref="child"
+                            style={{ width: "100%", height: "100%" }}
+                        >
 
                             <Segment
                                 textAlign="left"
