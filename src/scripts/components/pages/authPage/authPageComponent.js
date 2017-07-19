@@ -1,7 +1,7 @@
 import React, { Component } from "react"
 import { connect } from "react-redux"
 import { Link } from "react-router-dom"
-import { Button, Grid, Segment, Input, Header, Modal } from "semantic-ui-react"
+import { Button, Grid, Segment, Input, Header, Modal, Container } from "semantic-ui-react"
 import Login from "../../authComponents/loginComponent.js"
 import ForgotPassword from "../../authComponents/forgotPasswordComponent.js"
 import Register from "../../authComponents/registerComponent.js"
@@ -27,7 +27,9 @@ class AuthPage extends Component {
     render() {
         return (
             <div>
-
+                <Container as={Segment} text>creating an account/logging in works but game results 
+                are not integrated into your profile yet. I will develop that
+                feature if there becomes a demand</Container>
                 <Grid columns={"2"} divided stackable stretched container>
 
                     <Grid.Row stretched>
