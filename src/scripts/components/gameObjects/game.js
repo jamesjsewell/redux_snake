@@ -134,6 +134,10 @@ class ReduxSnake extends Component {
 
     componentWillReceiveProps(nextProps) {}
 
+    componentWillMount() {
+        this.setHighScore()
+    }
+
     componentDidMount() {
         window.addEventListener("keyup", this.handleKeys.bind(this, false))
         window.addEventListener("keydown", this.handleKeys.bind(this, true))
@@ -179,8 +183,6 @@ class ReduxSnake extends Component {
         window.removeEventListener("resize", this.handleKeys)
         window.removeEventListener("resize", this.handleResize)
     }
-
-    componentWillMount() {}
 
     //UPDATE NEW FRAME
 
@@ -358,11 +360,6 @@ class ReduxSnake extends Component {
         })
     }
 
-    newGame() {
-        this.props.setHighScore()
-        this.props.newGame()
-    }
-
     pauseGame() {
         this.handleResize("paused")
         this.props.pauseGame()
@@ -398,9 +395,10 @@ class ReduxSnake extends Component {
     }
 
     newHighScore() {
-        if (this.props.score > this.props.highScore) {
+        if (Number(this.props.score) > Number(this.props.highScore)) {
             localStorage["snakeHighScore"] = this.props.score
             this.props.newHighScore(this.props.score)
+        } else {
         }
     }
 
@@ -432,7 +430,6 @@ class ReduxSnake extends Component {
         var wallArray = []
 
         var wallLength = this.state.gameWrapper.width / this.state.tileWidth - 1
-        console.log(wallLength)
 
         for (var brick = 0; brick < wallLength; brick++) {
             wallArray.push({ x: brick, y: 0 })
@@ -496,7 +493,8 @@ class ReduxSnake extends Component {
         return (
             <div ref="child">
 
-                <Segment textAlign="left" attached="top" tertiary>
+                <Segment textAlign="left" attached="top" tertiary compact>
+
                     <Header>[P] to pause</Header>
 
                 </Segment>
@@ -515,6 +513,12 @@ class ReduxSnake extends Component {
                     >
                         <Header sub>Length</Header>
                         <Header size="massive">{this.props.score}</Header>{" "}
+
+                        <Divider />
+
+                        {this.props.highScore
+                            ? "high score: " + this.props.highScore
+                            : null}
 
                     </Label>
 
@@ -537,7 +541,7 @@ class ReduxSnake extends Component {
                     {this.props.gamePaused
                         ? <Message floating>
                               <Message.Header>
-                                  <Header>Game Paused</Header>
+                                  <Header>game paused</Header>
 
                               </Message.Header>
                               <Divider />
@@ -562,7 +566,11 @@ class ReduxSnake extends Component {
                         ? <Message compact floating>
                               <Message.Header textAlign="center">
 
-                                  {this.props.gameOverMessage}
+                                  <Header>
+                                      {this.props.beatHighScore
+                                          ? "new high score!"
+                                          : this.props.gameOverMessage}
+                                  </Header>
 
                               </Message.Header>
                               <Divider />
@@ -608,7 +616,7 @@ function mapStateToProps(state) {
         gameOverMessage: state.game.gameOverMessage,
         gameStopped: state.game.stopped,
         highScore: state.game.highScore,
-        newHighScore: state.game.newHighScore,
+        beatHighScore: state.game.newHighScore,
         score: state.game.score
     }
 }
