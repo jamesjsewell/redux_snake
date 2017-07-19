@@ -110,7 +110,7 @@ class ReduxSnake extends Component {
                 },
                 gameWrapper: {
                     width: this.refs.child
-                        ? this.refs.child.parentNode.offsetWidth * 0.8
+                        ? window.innerHeight * 0.8
                         : undefined
                 },
                 tileWidth: this.refs.child.parentNode.offsetWidth *
