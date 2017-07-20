@@ -146,11 +146,9 @@ class ReduxSnake extends Component {
                 ratio: window.devicePixelRatio || 1
             },
             gameWrapper: {
-                width: this.refs.child.parentNode.offsetWidth * 0.85
+                width: this.refs.child.parentNode.offsetWidth * 0.8
             },
-            tileWidth: this.refs.child.parentNode.offsetWidth *
-                0.85 /
-                this.state.tileRatio
+            tileWidth: this.refs.child.parentNode.offsetWidth * 0.8 / this.state.tileRatio
         })
     }
 
@@ -215,10 +213,7 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
-        if (
-            this.refs.child.parentNode.offsetWidth * 0.85 !=
-            this.state.gameWrapper.width
-        ) {
+        if (this.refs.child.parentNode.offsetWidth * 0.8 != this.state.gameWrapper.width) {
             console.log("switched window size")
             this.handleResize()
         }
@@ -568,19 +563,11 @@ class ReduxSnake extends Component {
             height: `${this.state.screen.height}px`
         })
         return (
-            <Modal
-                
-                style={{
-                    width: `${this.state.screen.widtht}px`,
-                    height: `${this.state.screen.height}px`
-                }}
-                size="medium"
-                open={true}
-            >
+            <Modal basic open={true}>
 
-                <Modal.Content>
+                <Modal.Content basic>
 
-                    <Grid as={Segment} basic attached>
+                    <Grid>
 
                         <Grid.Row>
 
@@ -666,35 +653,33 @@ class ReduxSnake extends Component {
                                 >
 
                                     <Segment
-                                        secondary
-                                        attached="bottom"
+                                        basic
                                         className="score current-score"
                                         textAlign="center"
                                     >
-                                        <Label
-                                            tag
-                                            compact
-                                            floating
-                                            size={
-                                                this.props.lostGame
-                                                    ? "massive"
-                                                    : ""
-                                            }
-                                        >
-                                            <Header sub>Length</Header>
-                                            <Header size="massive">
-                                                {this.props.score}
-                                            </Header>
-                                            {" "}
+                                        {this.props.lostGame
+                                            ? null
+                                            : <Label
+                                                  tag
+                                                  compact
+                                                  floating
+                                                  size="medium"
+                                              >
 
-                                            <Divider />
+                                                  <Header sub>Length</Header>
+                                                  <Header size="massive">
+                                                      {this.props.score}
+                                                  </Header>
+                                                  {" "}
 
-                                            {this.props.highScore
-                                                ? "high score: " +
-                                                      this.props.highScore
-                                                : null}
+                                                  <Divider />
 
-                                        </Label>
+                                                  {this.props.highScore
+                                                      ? "high score: " +
+                                                            this.props.highScore
+                                                      : null}
+
+                                              </Label>}
 
                                         <canvas
                                             ref="canvas"
