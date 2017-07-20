@@ -13,7 +13,8 @@ import {
     Header,
     Divider,
     Label,
-    Message
+    Message,
+    Modal
 } from "semantic-ui-react"
 
 import {
@@ -140,10 +141,10 @@ class ReduxSnake extends Component {
         //             },
         this.setState({
             gameWrapper: {
-                width: this.refs.child.parentNode.offsetWidth * 0.7
+                width: this.refs.child.parentNode.offsetWidth * 0.85
             },
             tileWidth: this.refs.child.parentNode.offsetWidth *
-                0.7 /
+                0.85 /
                 this.state.tileRatio
         })
     }
@@ -210,10 +211,10 @@ class ReduxSnake extends Component {
 
     update() {
         if (
-            this.refs.child.parentNode.offsetWidth * 0.7 !=
+            this.refs.child.parentNode.offsetWidth * 0.85 !=
             this.state.gameWrapper.width
-        ) { 
-            console.log('switched window size')
+        ) {
+            console.log("switched window size")
             this.handleResize()
         }
         var newDirection = this.state.newDirection
@@ -559,30 +560,35 @@ class ReduxSnake extends Component {
         const gameAreaSize = this.state.gameWrapper.width
 
         return (
-            <Grid stretched container>
+            <Modal as={'div'} basic open={true} size="fullscreen">
 
-                <Grid.Row>
+                <Modal.Content>
 
-                    {this.props.lostGame || this.props.gamePaused
-                        ? <Grid.Column width={4}>
-                              <Segment
-                                  compact
-                                  secondary
-                                  size="massive"
-                                  attached="left"
-                                  textAlign="left"
-                                  floating
-                              >
-                                  {this.state.paused
-                                      ? <Message floating>
-                                            <Message.Header>
-                                                <Header>game paused</Header>
+                    <Grid stretched container>
 
-                                            </Message.Header>
-                                            <Divider />
-                                            <Message.Content>
-                                                <Segment attached="top">
-                                                    <Header>
+                        <Grid.Row>
+
+                            {this.props.lostGame || this.props.gamePaused
+                                ? <Grid.Column width={4}>
+                                      <Segment
+                                          compact
+                                          secondary
+                                          size="massive"
+                                          attached="left"
+                                          textAlign="left"
+                                          floating
+                                      >
+                                          {this.state.paused
+                                              ? <Message floating>
+                                                    <Message.Header>
+                                                        <Header>
+                                                            game paused
+                                                        </Header>
+
+                                                    </Message.Header>
+                                                    <Divider />
+                                                    <Message.Content>
+
                                                         <Button
                                                             primary
                                                             onClick={this.resumeGame.bind(
@@ -590,28 +596,18 @@ class ReduxSnake extends Component {
                                                             )}
                                                             content={"resume"}
                                                         />
-                                                    </Header>
-                                                </Segment>
 
-                                            </Message.Content>
+                                                    </Message.Content>
 
-                                        </Message>
-                                      : null}
-                                  {this.props.lostGame
-                                      ? <Message compact floating>
-                                            <Message.Header textAlign="center">
-
-                                                <Header>
+                                                </Message>
+                                              : null}
+                                          {this.props.lostGame
+                                              ? <div>
+                                                    {" "}
                                                     {this.props.beatHighScore
                                                         ? "new high score!"
-                                                        : this.props
-                                                              .gameOverMessage}
-                                                </Header>
+                                                        : null}
 
-                                            </Message.Header>
-                                            <Divider />
-                                            <Message.Content>
-                                                <Segment attached="top">
                                                     <Header>
                                                         you scored
                                                         {" "}
@@ -621,8 +617,7 @@ class ReduxSnake extends Component {
                                                             ? "points!"
                                                             : "point!"}
                                                     </Header>
-                                                </Segment>
-                                                <Segment attached="bottom">
+
                                                     <Button
                                                         primary
                                                         onClick={() => {
@@ -633,79 +628,74 @@ class ReduxSnake extends Component {
                                                         }}
                                                         content={"play again"}
                                                     />
-                                                </Segment>
 
-                                            </Message.Content>
+                                                </div>
+                                              : null}
 
-                                        </Message>
-                                      : null}
+                                      </Segment>
 
-                              </Segment>
+                                  </Grid.Column>
+                                : null}
 
-                          </Grid.Column>
-                        : null}
-
-                    <Grid.Column
-                        width={
-                            !this.props.lostGame && !this.state.paused ? 16 : 12
-                        }
-                    >
-                        <div
-                            ref="child"
-                            style={{ width: "100%", height: "100%" }}
-                        >
-
-                            <Segment
-                                textAlign="left"
-                                attached="top"
-                                tertiary
-                                compact
+                            <Grid.Column
+                                width={
+                                    !this.props.lostGame && !this.state.paused
+                                        ? 16
+                                        : 12
+                                }
                             >
-
-                                <Header>[P] to pause</Header>
-
-                            </Segment>
-
-                            <Segment
-                                secondary
-                                attached="bottom"
-                                className="score current-score"
-                                textAlign="center"
-                            >
-                                <Label
-                                    tag
-                                    compact
-                                    floating
-                                    size={this.props.lostGame ? "massive" : ""}
+                                <div
+                                    ref="child"
+                                    style={{ width: "100%", height: "100%" }}
                                 >
-                                    <Header sub>Length</Header>
-                                    <Header size="massive">
-                                        {this.props.score}
-                                    </Header>
-                                    {" "}
 
-                                    <Divider />
+                                    <Segment
+                                        secondary
+                                        attached="bottom"
+                                        className="score current-score"
+                                        textAlign="center"
+                                    >
+                                        <Label
+                                            tag
+                                            compact
+                                            floating
+                                            size={
+                                                this.props.lostGame
+                                                    ? "massive"
+                                                    : ""
+                                            }
+                                        >
+                                            <Header sub>Length</Header>
+                                            <Header size="massive">
+                                                {this.props.score}
+                                            </Header>
+                                            {" "}
 
-                                    {this.props.highScore
-                                        ? "high score: " + this.props.highScore
-                                        : null}
+                                            <Divider />
 
-                                </Label>
+                                            {this.props.highScore
+                                                ? "high score: " +
+                                                      this.props.highScore
+                                                : null}
 
-                                <canvas
-                                    ref="canvas"
-                                    width={gameAreaSize}
-                                    height={gameAreaSize}
-                                />
+                                        </Label>
 
-                            </Segment>
+                                        <canvas
+                                            ref="canvas"
+                                            width={gameAreaSize}
+                                            height={gameAreaSize}
+                                        />
 
-                        </div>
+                                    </Segment>
 
-                    </Grid.Column>
+                                </div>
 
-                </Grid.Row>
-            </Grid>
+                            </Grid.Column>
+
+                        </Grid.Row>
+                    </Grid>
+                </Modal.Content>
+            </Modal>
         )
     }
 }
