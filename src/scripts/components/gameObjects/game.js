@@ -81,7 +81,7 @@ class ReduxSnake extends Component {
             snakeArray: undefined,
             snakeFood: undefined,
             snakeColor: "#66ff66",
-            snakeHeadColor: "#329b32",
+            snakeHeadColor: "#51cc51",
             snakeLength: 1,
             foodColor: "#ff0000",
             wallArray: undefined,
