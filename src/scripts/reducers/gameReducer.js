@@ -19,7 +19,7 @@ const INITIAL_STATE = {
 	over: false,
 	gameOverMessage: undefined,
 	stopped: true,
-	highScore: undefined,
+	highScore: 0,
 	newHighScore: undefined,
 	score: 1
 }

@@ -140,6 +140,11 @@ class ReduxSnake extends Component {
         //                 ratio: window.devicePixelRatio || 1
         //             },
         this.setState({
+            screen: {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                ratio: window.devicePixelRatio || 1
+            },
             gameWrapper: {
                 width: this.refs.child.parentNode.offsetWidth * 0.85
             },
@@ -558,13 +563,24 @@ class ReduxSnake extends Component {
             }
         }
         const gameAreaSize = this.state.gameWrapper.width
-
+        console.log({
+            width: `${this.state.screen.width}px`,
+            height: `${this.state.screen.height}px`
+        })
         return (
-            <Modal as={'div'} basic open={true} size="fullscreen">
+            <Modal
+                
+                style={{
+                    width: `${this.state.screen.widtht}px`,
+                    height: `${this.state.screen.height}px`
+                }}
+                size="medium"
+                open={true}
+            >
 
                 <Modal.Content>
 
-                    <Grid stretched container>
+                    <Grid as={Segment} basic attached>
 
                         <Grid.Row>
 
