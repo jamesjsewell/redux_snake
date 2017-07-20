@@ -148,7 +148,9 @@ class ReduxSnake extends Component {
             gameWrapper: {
                 width: this.refs.child.parentNode.offsetWidth * 0.8
             },
-            tileWidth: this.refs.child.parentNode.offsetWidth * 0.8 / this.state.tileRatio
+            tileWidth: this.refs.child.parentNode.offsetWidth *
+                0.8 /
+                this.state.tileRatio
         })
     }
 
@@ -213,7 +215,10 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
-        if (this.refs.child.parentNode.offsetWidth * 0.8 != this.state.gameWrapper.width) {
+        if (
+            this.refs.child.parentNode.offsetWidth * 0.8 !=
+            this.state.gameWrapper.width
+        ) {
             console.log("switched window size")
             this.handleResize()
         }
@@ -606,9 +611,11 @@ class ReduxSnake extends Component {
                                               : null}
                                           {this.props.lostGame
                                               ? <div>
-                                                    {" "}
+
                                                     {this.props.beatHighScore
-                                                        ? "new high score!"
+                                                        ? <Header>
+                                                              new high score!
+                                                          </Header>
                                                         : null}
 
                                                     <Header>
