@@ -93,52 +93,7 @@ class ReduxSnake extends Component {
     }
 
     handleResize(gameState) {
-        // var width = this.refs.child.parentNode.offsetWidth
-        // var height = window.innerHeight
-        // var remainder = ""
-        // var gameSize = ""
-        // if (width > height) {
-        //     remainder = width - height
-        //     if (remainder > 0) {
-        //         gameSize = height
-        //     } else {
-        //         gameSize = width
-        //     }
-        // } else if (width < height) {
-        //     remainder = height - width
-        //     if (remainder > 0) {
-        //         gameSize = width
-        //     } else {
-        //         gameSize = width
-        //     }
-        // }
-
-        // var width = this.refs.child.parentNode.offsetWidth
-        // var height = this.refs.child.parentNode.offsetHeight
-        // var remainder = ""
-        // var gameSize = ""
-        // if (width > height) {
-        //     remainder = width - height
-        //     if (remainder > 0) {
-        //         gameSize = height
-        //     } else {
-        //         gameSize = width
-        //     }
-        // } else if (width < height) {
-        //     remainder = height - width
-        //     if (remainder > 0) {
-        //         gameSize = width
-        //     } else {
-        //         gameSize = width
-        //     }
-        // }
-
-        //
-        // screen: {
-        //                 width: window.innerWidth,
-        //                 height: window.innerHeight,
-        //                 ratio: window.devicePixelRatio || 1
-        //             },
+        
         this.setState({
             screen: {
                 width: window.innerWidth,
@@ -572,7 +527,7 @@ class ReduxSnake extends Component {
 
                 <Modal.Content basic>
 
-                    <Grid>
+                    <Grid stackable>
 
                         <Grid.Row>
 
