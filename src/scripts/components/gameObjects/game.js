@@ -170,11 +170,12 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
+     
         if (
             this.refs.child.parentNode.offsetWidth * 0.8 !=
             this.state.gameWrapper.width
         ) {
-            console.log("switched window size")
+            
             this.handleResize()
         }
         var newDirection = this.state.newDirection
@@ -518,10 +519,7 @@ class ReduxSnake extends Component {
             }
         }
         const gameAreaSize = this.state.gameWrapper.width
-        console.log({
-            width: `${this.state.screen.width}px`,
-            height: `${this.state.screen.height}px`
-        })
+        
         return (
             <Modal basic open={true}>
 
