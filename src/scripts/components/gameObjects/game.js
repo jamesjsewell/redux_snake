@@ -64,7 +64,7 @@ class ReduxSnake extends Component {
                 width: undefined
             },
             tileWidth: undefined,
-            tileRatio: 24,
+            tileRatio: 48,
             context: null,
             keys: {
                 left: 0,
