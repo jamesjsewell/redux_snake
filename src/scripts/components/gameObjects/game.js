@@ -36,7 +36,7 @@ var theDay = theDate[2]
 var theMonth = theDate[1]
 var theYear = theDate[3]
 
-const frameRate = 12
+const frameRate = 15
 
 const KEY = {
     LEFT: 37,
@@ -64,7 +64,7 @@ class ReduxSnake extends Component {
                 width: undefined
             },
             tileWidth: undefined,
-            tileRatio: 48,
+            tileRatio: 32,
             context: null,
             keys: {
                 left: 0,
