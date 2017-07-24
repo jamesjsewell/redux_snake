@@ -29,6 +29,9 @@ import {
     newHighScore
 } from "../../actions/gameActions.js"
 
+import Particle from "./particle/particleComponent.js"
+import { randomNumBetween } from "./gameHelpers.js"
+
 //getting the date
 var fullDate = new Date()
 var theDate = String(fullDate).split(" ")
@@ -83,7 +86,7 @@ class ReduxSnake extends Component {
             snakeColor: "#66ff66",
             snakeHeadColor: "#51cc51",
             snakeLength: 1,
-            foodColor: "#ff0000",
+            foodColor: "#cc00cc",
             wallArray: undefined,
             paused: false
         }
@@ -93,7 +96,6 @@ class ReduxSnake extends Component {
     }
 
     handleResize(gameState) {
-        
         this.setState({
             screen: {
                 width: window.innerWidth,
@@ -170,12 +172,10 @@ class ReduxSnake extends Component {
     //UPDATE NEW FRAME
 
     update() {
-     
         if (
             this.refs.child.parentNode.offsetWidth * 0.8 !=
             this.state.gameWrapper.width
         ) {
-            
             this.handleResize()
         }
         var newDirection = this.state.newDirection
@@ -285,6 +285,30 @@ class ReduxSnake extends Component {
                     var tail = { x: headX, y: headY }
                     this.addToScore(1)
 
+                    //creates a burst of particles
+                    var snakeVelocity = { x: 0, y: 0 }
+                    if(this.state.snakeDirection === "left") snakeVelocity = { x: .4, y: 0 }
+                    else if(this.state.snakeDirection === "right")snakeVelocity = { x: -.4, y: 0 }
+                    else if(this.state.snakeDirection === "up") snakeVelocity = { x: 0, y: .4 }
+                    else if(this.state.snakeDirection === "down") snakeVelocity = { x: 0, y: -.4}
+                  
+                    for (var i = 0; i < 15; i++) {
+                        const particle = new Particle({
+                            lifeSpan: randomNumBetween(0, 10),
+                            size: randomNumBetween(10, 20),
+                            position: {
+                                x: headX * this.state.tileWidth,
+                                y: headY * this.state.tileWidth 
+                            },
+                            velocity: {
+                                x: snakeVelocity.x + randomNumBetween(snakeVelocity.x, snakeVelocity.x + .2),
+                                y: snakeVelocity.y + randomNumBetween(snakeVelocity.y, snakeVelocity.y + .2)
+                            },
+                            color: this.state.foodColor
+                        })
+                        this.createObject(particle, "particles")
+                    }
+
                     this.generateFood()
                 } else {
                     if (this.state.snakeDirection) {
@@ -336,6 +360,8 @@ class ReduxSnake extends Component {
             }
         }
 
+        
+
         context.restore()
 
         this.state.snakeDirection = this.state.newDirection
@@ -349,6 +375,8 @@ class ReduxSnake extends Component {
         if (gameOver === true) {
             this.gameOver(snakeHit)
         }
+
+        this.updateObjects(this.particles, "particles")
     }
 
     // CHANGE GAME STATE //
@@ -409,7 +437,6 @@ class ReduxSnake extends Component {
     }
 
     // GAME ENTITY LOGIC //
-
     generateFood() {
         var wall = this.state.gameWrapper.width / this.state.tileWidth - 2
         var max = Math.floor(wall)
@@ -476,6 +503,22 @@ class ReduxSnake extends Component {
         return false
     }
 
+    createObject(item, group) {
+        this[group].push(item)
+    }
+
+    updateObjects(items, group) {
+        let index = 0
+        for (let item of items) {
+            if (item.delete) {
+                this[group].splice(index, 1)
+            } else {
+                items[index].render(this.state)
+            }
+            index++
+        }
+    }
+
     render() {
         var transitioned = false
         if (!this.state.paused) {
@@ -519,7 +562,7 @@ class ReduxSnake extends Component {
             }
         }
         const gameAreaSize = this.state.gameWrapper.width
-        
+
         return (
             <Modal basic open={true}>
 
